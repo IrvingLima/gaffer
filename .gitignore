@@ -1,0 +1,7 @@
+# solo se publica el juego; el resto queda en local
+playtest/
+v2_backup/
+v3_backup_js/
+prompt_investigacion_muse.md
+.claude/
+*.log
