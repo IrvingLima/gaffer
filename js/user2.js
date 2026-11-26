@@ -180,15 +180,22 @@ function trainingWeek(){
     if(p.age>29)return;
     const focus=grp.includes(p.pos)?(c.train==='bal'?0.8:1.5):0.5;
     const played=S.t-p.lp<=10?1:0.55;
-    const mult=(1+tech*0.02)*rateOf(p)*focus*played*(p.pos==='GK'?(1+staffAbSafe('gk')*0.015):1);
+    const mult=(1+tech*0.02)*rateOf(p)*focus*played*(p.plan!=null?1.5:1)*(p.pos==='GK'?(1+staffAbSafe('gk')*0.015):1);
     if(p.age<=24){
       if(tickDev(p,mult*1.2))up.push(p);
     }else if(p.ovr<p.pot&&Math.random()<(0.02+(p.pot-p.ovr)*0.004)*mult){p.ovr++;up.push(p);}
+    // potencial dinámico en el primer equipo: sube si juega y rinde, baja si se estanca o se lesiona mucho
+    if(p.age>=18&&p.age<=24&&p.where==='first'){
+      const idle=p.lp>0?S.t-p.lp>42:S.t>dayOf(S.Y,7,1)+126;
+      if(idle&&p.pot>=p.ovr+4&&Math.random()<0.02){p.pot--;p._why=`Lleva semanas sin jugar: su techo baja (de ${p.pot+1} a ${p.pot}). Dale minutos o cédelo.`;}
+      else if(p.inj>=8&&p.pot>p.ovr+2&&Math.random()<0.12){p.pot--;p._why='Una lesión larga frena su proyección: baja su techo.';}
+      else if(p.age<=23&&p.ap>=12&&S.t-p.lp<=10&&p.pot<96&&p.pot<p.ovr+14&&Math.random()<0.015){p.pot++;p._why=`Es habitual en el once y rinde (${p.ap} partidos): sube su techo.`;}
+    }
     if(p.age<=21&&p.known!==false){
       if(p.lp>=S.t-14&&p.g>=3&&Math.random()<0.02&&p.pot<96){p.pot++;p._why=`Su techo sube: juega a menudo y rinde (${p.g} goles esta temporada).`;}
     }
   });
-  up.forEach(p=>{const L=p.pos==='GK'?ATTL.gk:ATTL.out,idx=({att:[0,1,3],mid:[2,3],def:[4,5],bal:[0,1,2,3,4,5],fit:[5]}[c.train||'bal']||[0,1,2,3,4,5]),ix=p.pos==='GK'?ri(0,5):pick(idx);p.a[ix]=clamp(p.a[ix]+1,18,98);
+  up.forEach(p=>{const L=p.pos==='GK'?ATTL.gk:ATTL.out,idx=({att:[0,1,3],mid:[2,3],def:[4,5],bal:[0,1,2,3,4,5],fit:[5]}[c.train||'bal']||[0,1,2,3,4,5]),ix=p.plan!=null?p.plan:(p.pos==='GK'?ri(0,5):pick(idx));p.a[ix]=clamp(p.a[ix]+1,18,98);
     const pl=S.t-p.lp<=10;rep.ups.push({pid:p.id,txt:`${p.name}: +1 en ${L[ix]} (${pl?'está jugando':'entrenamiento'}${c.train&&c.train!=='bal'?', foco '+({att:'ataque',mid:'medio',def:'defensa',fit:'físico'})[c.train]:''})`});});
   c.players.map(i=>S.players[i]).filter(p=>p.age>=19&&p.age<=29&&p.ovr<p.pot&&S.t-p.lp>21).slice(0,6).forEach(p=>rep.idle.push({pid:p.id,txt:`${p.name} lleva ${Math.max(21,S.t-p.lp)} días sin jugar: su crecimiento está frenado (techo bajo si no suma minutos).`}));
   S.trainRep=(S.trainRep||[]);S.trainRep.unshift(rep);if(S.trainRep.length>6)S.trainRep.length=6;
@@ -262,6 +269,7 @@ function respond(id,key){
     if(key==='accept'){
       const p=S.players[m.pid];if(!p||p.club!==S.user){done();return 'El jugador ya no está en tu plantilla.';}
       const err=transferOut(m.pid,m.cid,m.fee);if(err)return err;msg=`Has vendido a ${p.name} por ${EUR(m.fee)}.`;
+      if(m.swap!=null){const q=S.players[m.swap],b=S.clubs[m.cid];if(q&&q.club===m.cid){b.players=b.players.filter(i=>i!==q.id);q.club=S.user;q.where='first';q.since=S.t;q.src=null;q.lock=null;userClub().players.push(q.id);msg=`Canje cerrado: te llega ${q.name} (${q.ovr}) y ${EUR(m.fee)} por ${p.name}.`;news(msg,'t');}}
     }else msg='Oferta rechazada.';
     done();
   }else if(m.ty==='interest'){
@@ -291,6 +299,8 @@ function respond(id,key){
   }else if(m.ty==='deadline'){
     if(key==='dd'){if(!S.dd||!S.dd.open||S.dd.Y!==userYear())ddOpen();m.done=true;return {open:'dd'};}
     done();
+  }else if(m.ty==='ntjob'){
+    if(key==='accept')msg=ntAccept(m);else{S.ntDecl=S.t;m.done=true;msg='Has rechazado la oferta de la selección.';}
   }else if(m.ty==='preseason'){
     const r=preseasonPlay(key);m.done=true;msg=`Pretemporada resuelta: ${r.games.length?r.games.join(' · '):'trabajo físico'}${r.prize?' · premio '+EUR(r.prize):''}.`;
   }else if(m.ty==='sponsorpick'){

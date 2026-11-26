@@ -11,7 +11,7 @@ function shotPitchSVG(){
 }
 function addShot(e){
   if(!(e.t==='goal'||e.t==='save'||e.t==='miss'))return;
-  const g=$('#shots');if(!g)return;const ms=UI.ms,M=ms.M,hc=S.clubs[M.hid],ac=S.clubs[M.aid],c=e.home?hc:ac,[x,y]=shotXY(e),r=1.3+(e.xg||0.1)*7;
+  const g=$('#shots');if(!g)return;const ms=UI.ms,M=ms.M,hc=M.tc?M.tc.h:S.clubs[M.hid],ac=M.tc?M.tc.a:S.clubs[M.aid],c=e.home?hc:ac,[x,y]=shotXY(e),r=1.3+(e.xg||0.1)*7;
   const ns='http://www.w3.org/2000/svg',pos=document.createElementNS(ns,'g'),el=document.createElementNS(ns,'g');pos.setAttribute('transform',`translate(${x.toFixed(1)} ${y.toFixed(1)})`);el.setAttribute('class','shot '+e.t);pos.appendChild(el);
   const dot=document.createElementNS(ns,'circle');dot.setAttribute('r',r.toFixed(2));dot.setAttribute('fill',e.t==='miss'?'transparent':c.c1);dot.setAttribute('stroke',e.t==='miss'?c.c1:c.c2);dot.setAttribute('stroke-width',e.t==='goal'?'.9':'.6');
   el.appendChild(dot);
@@ -30,12 +30,12 @@ function updatePulse(){
   $('#mXgH').textContent=`${M.hx.toFixed(2)} · ${M.hs}`;$('#mXgA').textContent=`${M.ax.toFixed(2)} · ${M.as}`;
 }
 function drawMatch(){
-  const ms=UI.ms,M=ms.M,hc=S.clubs[M.hid],ac=S.clubs[M.aid];
+  const ms=UI.ms,M=ms.M,hc=M.tc?M.tc.h:S.clubs[M.hid],ac=M.tc?M.tc.a:S.clubs[M.aid];
   let pauseHTpref=true;try{pauseHTpref=localStorage.getItem('gaffer.htpause')!=='0';}catch(e){}
   ms.pauseHT=pauseHTpref;
   $('#modalRoot').innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="Partido"><div class="box wide">
    <div class="score"><div class="tm">${crest(hc,48)}<span>${esc(hc.name)}</span></div><div class="res" id="mScore" aria-live="polite">0-0</div><div class="tm">${crest(ac,48)}<span>${esc(ac.name)}</span></div></div>
-   <div class="lbl" style="text-align:center;margin-bottom:4px">${esc(S.pend&&S.pend.nm?S.pend.nm+' · '+S.pend.rn:leagueOf(S.user).nm)}${(userClub().rival===M.hid||userClub().rival===M.aid)?' · DERBI':''}</div>
+   <div class="lbl" style="text-align:center;margin-bottom:4px">${esc(M.nt?'Selecciones · '+M.ntFix.label:M.youth?'Liga juvenil':S.pend&&S.pend.nm?S.pend.nm+' · '+S.pend.rn:leagueOf(S.user).nm)}${(userClub().rival===M.hid||userClub().rival===M.aid)?' · DERBI':''}</div>
    <div class="row spread"><span class="lbl" id="mMin">Min 0'</span><div class="speed" id="mSpeed">${[0.5,1,2,4].map(v=>`<button class="btn xs ${ms.speed===v?'on':''}" data-act="mspeed" data-v="${v}">${v}×</button>`).join('')}<button class="btn xs" id="mPause" data-act="mpause" aria-label="Pausar">⏸</button></div></div>
    <div class="timeline"><i id="mBar" style="width:0"></i></div>
    ${shotPitchSVG()}${pulseHTML()}

@@ -3,7 +3,7 @@
 const BLOCKING=['offer','jobOffer','deadline','loanopt','preseason','sponsorpick'];
 /* una oferta no solicitada (jugador que no has puesto en venta) no detiene el juego: queda en el buzón hasta que venza */
 const blocks=m=>BLOCKING.includes(m.ty)&&!m.soft;
-const DECISIONS=['preseason','sponsorpick','challenge','offer','jobOffer','minutes','interest','deadline','unhappy','contract','sponsor','loanopt'];
+const DECISIONS=['ntjob','preseason','sponsorpick','challenge','offer','jobOffer','minutes','interest','deadline','unhappy','contract','sponsor','loanopt'];
 function pendingMsgs(){return S.inbox.filter(m=>!m.done&&DECISIONS.includes(m.ty));}
 function expireMsgs(){S.inbox.forEach(m=>{if(!m.done&&m.exp&&S.t>m.exp){m.done=true;m.expired=true;}});}
 /* mode: 'week' avanza hasta 7 días; 'match' hasta el próximo partido o evento importante */

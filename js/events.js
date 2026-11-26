@@ -118,6 +118,7 @@ function ddNext(){
   const tg=S.short.map(i=>S.players[i]).filter(p=>p&&p.club!=null&&p.club!==S.user);
   if(tg.length&&Math.random()<0.4){const p=pick(tg),rc=S.clubs.filter(x=>x.id!==c.id&&x.id!==p.club&&winOpen(x.cc,S.t)&&x.budget>valueOf(p));
     if(rc.length){const b=pick(rc);moveTo(p,b.id,valueOf(p));S.short=S.short.filter(i=>i!==p.id);dd.log.push(`${hour} · ${b.name} se adelanta y ficha a ${p.name}, de tu lista corta.`);news(`Deadline Day: ${p.name} ficha por ${b.name}.`,'t');}}
+  if(typeof ddRunPrepared==='function')ddRunPrepared();
   if(!dd.log.length||!dd.log[dd.log.length-1].startsWith(hour))dd.log.push(`${hour} · Sin novedades importantes.`);
   dd.step++;
   if(dd.step>=DD_HOURS.length){dd.open=false;dd.opps=[];return;}

@@ -1,13 +1,13 @@
 "use strict";
 /* ================= decisiones pendientes con más claridad + guía para cumplir los objetivos ================= */
-const MSG_TYPES={offer:['Oferta','good'],jobOffer:['Trabajo','acc'],minutes:['Minutos','info'],interest:['Interés','info'],deadline:['Cierre de mercado','bad'],unhappy:['Vestuario','warn'],contract:['Contrato','warn'],sponsor:['Patrocinio','gold'],loanopt:['Cesión','info'],season:['Temporada',''],promise:['Promesa','warn'],challenge:['Reto del mes','gold'],preseason:['Pretemporada','info'],sponsorpick:['Patrocinador','gold']};
+const MSG_TYPES={offer:['Oferta','good'],jobOffer:['Trabajo','acc'],minutes:['Minutos','info'],interest:['Interés','info'],deadline:['Cierre de mercado','bad'],unhappy:['Vestuario','warn'],contract:['Contrato','warn'],sponsor:['Patrocinio','gold'],loanopt:['Cesión','info'],season:['Temporada',''],promise:['Promesa','warn'],challenge:['Reto del mes','gold'],preseason:['Pretemporada','info'],ntjob:['Selección','gold'],sponsorpick:['Patrocinador','gold']};
 function msgHTML(m){
   const dec=!m.done&&m.ch,pend=!m.done&&DECISIONS.includes(m.ty),T=MSG_TYPES[m.ty]||['Aviso',''];
   const left=m.exp&&!m.done?m.exp-S.t:null,urg=left==null?'':left<=2?'bad':left<=5?'warn':'';
   let facts='';
   if(m.ty==='offer'&&m.pid!=null&&S.players[m.pid]&&m.fee!=null){
     const p=S.players[m.pid],v=valueOf(p),d=Math.round((m.fee/Math.max(1,v)-1)*100);
-    facts=`<div class="facts">${posTag(p.pos,p)}<span class="chip">${p.age} años · nivel ${p.ovr}</span><span class="chip">Ofrecen ${EUR(m.fee)}</span><span class="chip ${d>=0?'good':'bad'}">${d>=0?'+':''}${d}% sobre su valor</span>${m.soft&&!m.done?'<span class="chip">Sin urgencia</span>':''}</div>`;
+    facts=`<div class="facts">${posTag(p.pos,p)}<span class="chip">${p.age} años · nivel ${p.ovr}</span><span class="chip">Ofrecen ${EUR(m.fee)}${m.swap!=null&&S.players[m.swap]?' + '+esc(S.players[m.swap].name)+' ('+S.players[m.swap].ovr+')':''}</span><span class="chip ${d>=0?'good':'bad'}">${d>=0?'+':''}${d}% sobre su valor</span>${m.soft&&!m.done?'<span class="chip">Sin urgencia</span>':''}</div>`;
   }
   const acts=dec?`<div class="row dact">${m.ch.map((x,i)=>`<button class="btn sm ${i===0?'pri':i===m.ch.length-1?'ghost':''}" data-act="resp" data-id="${m.id}" data-v="${x.k}">${x.l}</button>`).join('')}${m.pid?`<button class="btn sm ghost" data-act="player" data-id="${m.pid}">Ver jugador</button>`:''}</div>`
     :(m.pid&&!m.done?`<div class="row dact"><button class="btn sm ghost" data-act="player" data-id="${m.pid}">Ver jugador</button></div>`:'');
@@ -76,6 +76,8 @@ function mDeadline(){
       <div class="sub">${esc(cl.name)} acepta ${EUR(o.fee)} (con prima por urgencia). Salario ${EUR(o.wage)}/sem · 3 años.</div><div class="row dact"><button class="btn sm pri" data-act="ddclose" data-v="${i}" ${o.closed?'disabled':''}>${o.closed?'Resuelto':'Cerrar fichaje'}</button><button class="btn sm ghost" data-act="player" data-id="${p.id}">Ver jugador</button></div></div>`;}).join(''):'<div class="empty">Sin oportunidades interesantes ahora mismo.</div>'}
     ${offers.length?`<h3 style="margin-top:12px">Ofertas por tus jugadores</h3><div class="dlist">${offers.map(msgHTML).join('')}</div>`:''}`;
   }
+  const prep=S.prep?Object.keys(S.prep).map(k=>S.players[+k]).filter(Boolean):[];
+  if(prep.length&&dd.open)body+=`<h3 style="margin-top:12px">Operaciones preparadas</h3>${prep.map(p=>`<div class="kv"><span>${esc(p.name)} (${p.ovr}) · ${EUR(S.prep[p.id].fee)}</span><button class="btn xs" data-act="prepdd" data-id="${p.id}">Retirar</button></div>`).join('')}<p class="sub">Se intentan cerrar a lo largo del día; pueden caerse si el club se echa atrás o ya no llegas al presupuesto o al límite salarial.</p>`;
   body+=`<h3 style="margin-top:12px">En directo</h3><div class="feed" style="max-height:170px">${dd.log.slice().reverse().map(x=>`<div class="ev"><span>${esc(x)}</span></div>`).join('')||'<div class="empty">Aún no ha pasado nada.</div>'}</div>`;
   if(!dd.open){
     body+=`<div class="panel" style="margin-top:12px"><div class="hd"><h2>Resumen del día</h2></div><div class="kv"><span>Altas</span><b>${dd.signed.length}</b></div>${dd.signed.map(x=>`<div class="sub">· ${esc(x)}</div>`).join('')}<div class="kv"><span>Operaciones caídas</span><b>${dd.failed.length}</b></div>${dd.failed.map(x=>`<div class="sub">· ${esc(x)}</div>`).join('')}<p class="sub" style="margin-bottom:0">Bajas: acepta ofertas desde el buzón; las que dejaste pendientes caducan con el cierre.</p></div>`;
@@ -89,4 +91,22 @@ function trainReportHTML(){
   return `<div class="panel"><div class="hd"><h2>Informe de entrenamiento</h2><span class="sub">semana del ${fmtD(r.t)}</span></div>
    ${r.ups.length?r.ups.slice(0,6).map(x=>`<div class="kv nw" data-act="player" data-id="${x.pid}" style="cursor:pointer"><span>${esc(x.txt)}</span><span class="dl up">▲</span></div>`).join(''):'<div class="sub">Esta semana nadie mejora: sigue entrenando y dando minutos.</div>'}
    ${r.idle.length?`<div class="lbl" style="margin-top:8px">Sin minutos</div>${r.idle.map(x=>`<div class="why warn">${esc(x.txt)}</div>`).join('')}`:''}</div>`;
+}
+
+function youthMatchPanel(){
+  const q=S.yp;if(!q)return '';
+  const h=S.clubs[q.h],a=S.clubs[q.a],mine=q.h===S.user,opp=mine?a:h,ours=youthStrength(S.clubs[S.user]),theirs=youthStrength(opp);
+  return `<div class="panel"><div class="hd"><h2>Partido juvenil de la semana</h2><span class="chip ${ours>=theirs?'good':'warn'}">${ours>=theirs?'Favoritos':'Rival superior'}</span></div>
+   <div class="row spread"><div class="row nw" style="gap:8px">${crest(h,26)}<b>${esc(h.name)}</b></div><span class="sub">vs</span><div class="row nw" style="gap:8px"><b>${esc(a.name)}</b>${crest(a,26)}</div></div>
+   <p class="sub" style="margin:8px 0">Tu cantera: nivel ${Math.round(ours)} · rival ${Math.round(theirs)}. Si no lo juegas, se simula solo al empezar la semana siguiente. Los titulares suman minutos y los goleadores quedan registrados.</p>
+   <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="youthplay">Jugar el partido</button><button class="btn" data-act="youthsim">Simular</button></div></div>`;
+}
+
+function ntPanel(){
+  const N=S.nt;if(!N)return '';
+  const nm=NAT[N.cc].nm,fx=N.fix||[];
+  return `<div class="panel"><div class="hd"><h2>Selección de ${esc(nm)}</h2><span class="chip gold">${N.w}G ${N.d}E ${N.l}P</span></div>
+   ${fx.length?fx.map((f,i)=>`<div class="dcard pending"><div class="dhead"><span class="chip info">${f.label}</span><span class="due">${fmtD(f.t)}</span></div><b class="dt">${flag(N.cc,12)} ${esc(nm)} vs ${flag(f.opp,12)} ${esc(NAT[f.opp].nm)}</b><div class="row dact"><button class="btn sm pri" data-act="ntplay" data-v="${i}">Jugar</button><button class="btn sm" data-act="ntsim" data-v="${i}">Simular</button></div></div>`).join(''):`<div class="sub">Sin partidos pendientes. Los próximos llegan con el siguiente parón de selecciones.</div>`}
+   ${N.hist.length?`<div class="lbl" style="margin-top:10px">Últimos resultados</div>${N.hist.slice(0,4).map(h=>`<div class="kv"><span>${fmtD(h.t)} · ${esc(NAT[h.opp].nm)} (${h.label})</span><b class="${h.my>h.op?'good':h.my<h.op?'bad':''}">${h.my}-${h.op}</b></div>`).join('')}`:''}
+   <div class="row" style="margin-top:10px"><button class="btn xs ghost" data-act="ntquit">Dejar la selección</button></div></div>`;
 }

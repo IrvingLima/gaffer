@@ -18,10 +18,10 @@ function render(){const fk=focusKey(),y=window.scrollY,hadModal=!!UI.m;_render()
 /* ---------- pantalla inicial / selección ---------- */
 function slotsPanel(){
   const j=slotsMeta(),free=firstFreeSlot();
-  const card=(m,i)=>m?`<div class="slot"><div class="row spread nw"><b>${esc(m.club||'Sin club')}</b><span class="chip">${esc((DIFFS[m.diff]||DIFFS.normal).nm)}</span></div><div class="sub">${esc(m.mgr||'')} · ${m.cc&&LG_BY_CC[m.cc]?LG_BY_CC[m.cc].nm:'—'} · ${esc(m.ylab||seasonLabel(m.Y||2026))} · ${fmtD(m.t)}</div><div class="row" style="margin-top:10px;gap:8px"><button class="btn sm pri" data-act="continue" data-v="${i}">Continuar ${ic('arrow','sm')}</button><button class="btn sm ghost" data-act="delslot" data-v="${i}" aria-label="Borrar carrera ${i+1}">Borrar</button></div></div>`
+  const card=(m,i)=>m?`<div class="slot"><div class="row spread nw"><b>${esc(m.club||'Sin club')}</b><span class="chip">${esc((DIFFS[m.diff]||DIFFS.normal).nm)}</span></div><div class="sub">${esc(m.mgr||'')} · ${m.cc&&LG_BY_CC[m.cc]?LG_BY_CC[m.cc].nm:'—'} · ${esc(m.ylab||seasonLabel(m.Y||2026))} · ${fmtD(m.t)}</div><div class="row" style="margin-top:10px;gap:8px"><button class="btn sm pri" data-act="continue" data-v="${i}">Continuar ${ic('arrow','sm')}</button><button class="btn sm ghost" data-act="expslot" data-v="${i}" aria-label="Exportar carrera ${i+1}">Exportar</button><button class="btn sm ghost" data-act="delslot" data-v="${i}" aria-label="Borrar carrera ${i+1}">Borrar</button></div></div>`
    :`<button class="slot empty" data-act="newworld" data-v="${i}"><span class="code">+</span><b>Nueva carrera</b><span class="sub">Ranura ${i+1} libre</span></button>`;
   const any=j.list.some(x=>x);
-  return `<div class="lbl" style="margin-top:24px">${any?'Tus carreras':'Empieza'}</div><div class="slots">${j.list.map((m,i)=>card(m,i)).join('')}</div>`;
+  return `<div class="lbl" style="margin-top:24px">${any?'Tus carreras':'Empieza'}</div><div class="slots">${j.list.map((m,i)=>card(m,i)).join('')}</div><div class="row" style="margin-top:12px;gap:10px;flex-wrap:wrap"><button class="btn" data-act="impbtn">Importar partida desde archivo…</button><input id="importfile" type="file" accept=".gaffer,.json,application/json,application/gzip" hidden><span class="sub">Exporta una partida a un archivo .gaffer para llevarla a otro dispositivo.</span></div>`;
 }
 function renderStart(){
   applyAccent();
@@ -132,6 +132,7 @@ function vHome(){
     h+=`<section class="hero"><div class="lbl">Pretemporada ${userSeasonLabel()}</div><div class="num big" style="font-size:52px;margin:6px 0">${first?Math.max(0,first.t-S.t)+' días':'—'}</div><div class="sub">para el inicio de ${lg.nm}${first?' ('+fmtD(first.t,true)+')':''}. ${w.open?`El mercado cierra en ${w.left} días.`:''}</div></section>`;
   }
   if(pending.length)h+=`<div class="panel"><div class="hd"><h2>Decisiones pendientes <span class="cnt">${allPending.length}</span></h2><button class="btn sm ghost" data-act="inbox">Ver todas</button></div><div class="dlist">${pending.map(m=>msgHTML(m)).join('')}</div>${allPending.length>pending.length?`<p class="sub" style="margin:8px 0 0">+${allPending.length-pending.length} más en el buzón.</p>`:''}</div>`;
+  if(S.nt)h+=ntPanel();
   if(S.dd&&S.dd.open)h+=`<div class="panel"><div class="hd"><h2>Deadline Day en marcha</h2><button class="btn sm pri" data-act="ddopen">Volver al evento</button></div><div class="sub">Son las ${DD_HOURS[S.dd.step]}. El mercado cierra a las 23:59.</div></div>`;
   if(S.pre&&S.pre.res&&S.t-(leagueOf(c.id).sched[0]?leagueOf(c.id).sched[0].t:0)<30)h+=`<div class="panel"><div class="hd"><h2>Pretemporada</h2><span class="chip">${esc(S.pre.res.opt)}</span></div><div class="sub">${S.pre.res.games.length?esc(S.pre.res.games.join(' · ')):'Trabajo físico'}${S.pre.res.prize?' · premio '+EUR(S.pre.res.prize):''} · moral de la primera jornada ${S.pre.res.moral>=0?'+':''}${S.pre.res.moral.toFixed(1)}</div></div>`;
   if(S.chal&&S.chal.state==='active')h+=`<div class="panel"><div class="hd"><h2>Reto vivo</h2><span class="chip gold">${EUR(S.chal.rew)}</span></div><div class="kv"><span>${esc(S.chal.t)}</span><b>${S.chal.prog}/${S.chal.need}</b></div><div class="sub">Partidos jugados: ${S.chal.played}${S.chal.kind==='unb'?'':'/'+S.chal.games}. Sin castigo si no lo logras.</div></div>`;
@@ -222,6 +223,7 @@ function vAcad(){
   const A=S.ac,c=userClub();
   let h=subnav('acad',[['squad','Plantel'],['league','Liga juvenil'],['intake',`Captación${A.intake.length?' ('+A.intake.length+')':''}`]]);
   const acad=A.list.map(i=>S.players[i]).sort((a,b)=>b.ovr-a.ovr),loans=A.loans.map(i=>S.players[i]);
+  if(typeof youthMatchPanel==='function')h+=youthMatchPanel();
   if(UI.sub.acad==='squad'){
     h+=`<div class="grid g3 keep"><div class="stat"><div class="lbl">Plazas</div><div class="num">${acad.length}<span class="mute" style="font-size:20px">/${ACAD_SLOTS(A.lvl)}</span></div><div class="sub">${EUR(academyCost())}/sem</div></div>
     <div class="stat"><div class="lbl">Academia</div><div class="num">Nv ${A.lvl}<span class="mute" style="font-size:20px">/5</span></div>${A.lvl<5?`<button class="btn xs" data-act="upg">Mejorar · ${EUR(upgCost(A.lvl))}</button>`:'<span class="chip good">Máximo</span>'}</div>
@@ -380,7 +382,7 @@ function vCareer(){
   if(UI.sub.career==='profile'){
     h+=`<div class="grid g3 keep"><div class="stat"><div class="lbl">Reputación</div><div class="num">${Math.round(S.mgr.rep)}</div>${fitBar(S.mgr.rep)}</div><div class="stat"><div class="lbl">Títulos</div><div class="num">${S.mgr.titles||0}</div></div><div class="stat"><div class="lbl">Temporadas</div><div class="num">${S.mgr.hist.length}</div></div></div>
     <div class="panel"><div class="hd"><h2>${esc(S.mgr.name)}</h2></div>${c?`<div class="kv"><span>Club actual</span><span>${clubTag(c.id,20)}</span></div><div class="kv"><span>Confianza de la directiva</span><b>${Math.round(c.board)}%</b></div>
-    <p class="sub">Tu reputación abre puertas: con buenos resultados llegan ofertas de clubes más grandes, incluso de otros países. Si la directiva pierde la confianza, te despiden.</p><label class="chk" style="margin:10px 0"><input type="checkbox" data-act="optexact" ${S.opt&&S.opt.exact?"checked":""}> Mostrar medias exactas de todos los jugadores (quita el misterio del ojeo; desactivado por defecto)</label><button class="btn danger" data-act="resign">Dimitir</button>`:`<p class="sub">Estás sin equipo. Revisa las vacantes o espera ofertas.</p>`}</div>`;
+    <p class="sub">Tu reputación abre puertas: con buenos resultados llegan ofertas de clubes más grandes, incluso de otros países. Si la directiva pierde la confianza, te despiden.</p><label class="chk" style="margin:10px 0"><input type="checkbox" data-act="optexact" ${S.opt&&S.opt.exact?"checked":""}> Mostrar medias exactas de todos los jugadores (quita el misterio del ojeo; desactivado por defecto)</label><button class="btn" data-act="expslot" data-v="${S.slot||0}">Exportar esta partida</button> <button class="btn danger" data-act="resign">Dimitir</button>`:`<p class="sub">Estás sin equipo. Revisa las vacantes o espera ofertas.</p>`}</div>`;
   }else if(UI.sub.career==='inbox'){
     h+=`<div class="panel"><div class="hd"><h2>Mensajes</h2></div>${S.inbox.slice(0,30).map(msgHTML).join('')||'<div class="empty">Bandeja vacía.</div>'}</div>`;
   }else if(UI.sub.career==='jobs'){

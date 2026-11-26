@@ -1,6 +1,6 @@
 "use strict";
 /* ================= alineación, ratings y motor de partido ================= */
-const eff=p=>p.ovr*(0.8+0.2*p.fit/100);
+const eff=p=>p.ovr*(0.8+0.2*p.fit/100)*(p.mo==null?1:1+0.0006*(p.mo-70));
 const staffAb=role=>{const c=userClub();if(!c||!S.staff)return 8;const s=S.staff.hired.find(x=>x.role===role);return s?s.ab:3;};
 const aiAb=c=>clamp(Math.round(5+(c.skill-60)/3.2),3,15);
 const sAb=(cid,role)=>cid===S.user?staffAb(role):aiAb(S.clubs[cid]);

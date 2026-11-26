@@ -255,8 +255,8 @@ function weeklyTick(){
     }
   });
   if(S.user!=null){
-    trackOvr();checkPromises();loanOptionWeek();trainingWeek();academyWeek();youthRound();scoutWeek();eventsWeek();contractsWeek();loanWeek();
-    boardWeek();challengeWeek();preseasonOffer();sponsorPickOffer();callupWeek();
+    trackOvr();checkPromises();loanOptionWeek();trainingWeek();moraleWeek();academyWeek();youthRound();scoutWeek();eventsWeek();contractsWeek();loanWeek();
+    boardWeek();challengeWeek();preseasonOffer();sponsorPickOffer();callupWeek();ntOfferWeek();ntWeek();
   }
   mgrWeek();
   S.lastWeekly=S.t;
@@ -318,13 +318,20 @@ function aiTransfers(tries){
 }
 function offersForUser(){
   const c=userClub();if(!c||!winOpen(c.cc,S.t))return;
-  const tl=c.players.map(i=>S.players[i]).filter(x=>x.tl&&!x.lo&&!lockDays(x)&&!(x.src==='free'&&S.t-(x.since||0)<365));
+  const tl=c.players.map(i=>S.players[i]).filter(x=>x.tl&&!x.nb&&!x.lo&&!lockDays(x)&&!(x.src==='free'&&S.t-(x.since||0)<365));
   if(Math.random()>(tl.length?0.22:0.1))return;
-  const pl=c.players.map(i=>S.players[i]).filter(x=>!x.lo&&!lockDays(x)&&!(x.src==='free'&&S.t-(x.since||0)<365)).sort((a,b)=>valueOf(b)-valueOf(a)).slice(0,14);
+  const pl=c.players.map(i=>S.players[i]).filter(x=>!x.nb&&!x.lo&&!lockDays(x)&&!(x.src==='free'&&S.t-(x.since||0)<365)).sort((a,b)=>valueOf(b)-valueOf(a)).slice(0,14);
   const p=tl.length&&Math.random()<0.7?pick(tl):pick(pl);if(!p||S.inbox.some(m=>m.ty==='offer'&&!m.done&&m.pid===p.id))return;
   const buyers=S.clubs.filter(b=>b.id!==c.id&&winOpen(b.cc,S.t)&&b.budget>valueOf(p)*1.1&&b.skill>=c.skill-8&&b.players.length<27);
   if(!buyers.length)return;const b=pick(buyers);
   const fee=Math.round(valueOf(p)*rnd(0.9,1.15)/1000)*1000,max=Math.round(Math.max(fee,valueOf(p)*rnd(1.1,1.45))/1000)*1000;
+  // la CPU propone a veces un canje: un jugador suyo + dinero
+  if(Math.random()<0.2){
+    const qs=b.players.map(x=>S.players[x]).filter(q=>q&&q.age<=30&&valueOf(q)>=fee*0.3&&valueOf(q)<=fee*0.85&&q.ovr>=p.ovr-9&&!q.inj);
+    if(qs.length){const q=pick(qs),cash=Math.max(0,Math.round((fee-valueOf(q)*0.9)/1000)*1000);
+      inbox({ty:'offer',title:`Canje: ${b.name} ofrece a ${q.name} por ${p.name}`,body:`${b.name} te ofrece a ${q.name} (${POSL[q.pos]} ${q.ovr}, ${q.age} años) y ${EUR(cash)} por ${p.name} (${POSL[p.pos]} ${p.ovr}). Vence en 7 días.`,pid:p.id,cid:b.id,fee:cash,max:cash,swap:q.id,soft:!p.tl,exp:S.t+7,ch:[{k:'accept',l:'Aceptar el canje'},{k:'reject',l:'Rechazar'}]});
+      return;}
+  }
   inbox({ty:'offer',title:`Oferta por ${p.name}`,body:`${b.name} ofrece ${EUR(fee)} por ${p.name} (${POSL[p.pos]} ${p.ovr}, ${p.age} años). Vence en 7 días. Puedes aceptar, contraofertar o rechazar.`,pid:p.id,cid:b.id,fee,max,exp:S.t+7,soft:!p.tl,
     ch:[{k:'accept',l:'Aceptar'},{k:'counter',l:'Contraofertar'},{k:'reject',l:'Rechazar'}]});
 }

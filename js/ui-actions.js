@@ -26,14 +26,15 @@ function mPlayer(pid){
   const ctx=ownerCtx(p),s=seen(p),c=userClub();
   const cl=p.club!=null&&S.clubs[p.club]?clubTag(p.club,22):esc(clubLabel(p));
   let acts='';
-  if(ctx==='own')acts=`<button class="btn sm" data-act="lock" data-id="${p.id}">Rol: ${p.lock==='start'?'Titular':p.lock==='rest'?'Descanso':'Auto'}</button><button class="btn sm pri" data-act="renew" data-id="${p.id}">Renovar</button><button class="btn sm" data-act="tl" data-id="${p.id}">${p.tl?'Quitar de venta':'Poner en venta'}</button><button class="btn sm" data-act="sellp2" data-id="${p.id}">Vender ${EUR(sellPrice(p))}</button><button class="btn sm danger" data-act="release2" data-id="${p.id}">Liberar</button>`;
+  if(ctx==='own')acts=`<button class="btn sm" data-act="lock" data-id="${p.id}">Rol: ${p.lock==='start'?'Titular':p.lock==='rest'?'Descanso':'Auto'}</button><button class="btn sm pri" data-act="renew" data-id="${p.id}">Renovar</button><button class="btn sm ${p.nb?'on':''}" data-act="nosell" data-id="${p.id}" title="La CPU no te hará ofertas por él">${p.nb?'Sin ofertas ✓':'No escuchar ofertas'}</button><button class="btn sm" data-act="tl" data-id="${p.id}">${p.tl?'Quitar de venta':'Poner en venta'}</button><button class="btn sm" data-act="sellp2" data-id="${p.id}">Vender ${EUR(sellPrice(p))}</button><button class="btn sm danger" data-act="release2" data-id="${p.id}">Liberar</button>`;
   else if(ctx==='acad')acts=`<button class="btn pri sm" data-act="promote" data-id="${p.id}">Ascender</button><button class="btn sm" data-act="loanm" data-id="${p.id}">Ceder</button><button class="btn sm" data-act="sellp" data-id="${p.id}">Vender ${EUR(sellPrice(p))}</button><button class="btn sm danger" data-act="release" data-id="${p.id}">Liberar</button>`;
   else if(ctx==='loan')acts=`<button class="btn sm" data-act="recall" data-id="${p.id}">Repatriar</button>`;
-  else acts=`<button class="btn pri" data-act="offer" data-id="${p.id}">${p.where==='free'?'Ofrecer contrato':'Hacer oferta'}</button>${(typeof canPrecontract==='function'&&canPrecontract(p))?`<button class="btn" data-act="pre" data-id="${p.id}" title="Su contrato acaba en junio">Pre-contrato (gratis)</button>`:''}<button class="btn ${S.short.includes(p.id)?'on':''}" data-act="short" data-id="${p.id}">${ic('star','sm')} ${S.short.includes(p.id)?'En lista corta':'Lista corta'}</button>${scoutsList().length?`<button class="btn" data-act="followm" data-id="${p.id}">${ic('eye','sm')} Seguir con ojeador</button>`:''}${p.club!=null&&S.clubs[p.club]?`<button class="btn ghost" data-act="clubview" data-id="${p.club}">Ver club</button>`:''}`;
+  else acts=`<button class="btn pri" data-act="offer" data-id="${p.id}">${p.where==='free'?'Ofrecer contrato':'Hacer oferta'}</button>${(typeof canPrecontract==='function'&&canPrecontract(p))?`<button class="btn" data-act="pre" data-id="${p.id}" title="Su contrato acaba en junio">Pre-contrato (gratis)</button>`:''}<button class="btn ${S.short.includes(p.id)?'on':''}" data-act="short" data-id="${p.id}">${ic('star','sm')} ${S.short.includes(p.id)?'En lista corta':'Lista corta'}</button>${p.where!=='free'?`<button class="btn ${S.prep&&S.prep[p.id]?'on':''}" data-act="prepdd" data-id="${p.id}" title="Se intentará cerrar el último día de la ventana">${S.prep&&S.prep[p.id]?'Operación preparada ✓':'Preparar para el Deadline Day'}</button>`:''}${scoutsList().length?`<button class="btn" data-act="followm" data-id="${p.id}">${ic('eye','sm')} Seguir con ojeador</button>`:''}${p.club!=null&&S.clubs[p.club]?`<button class="btn ghost" data-act="clubview" data-id="${p.club}">Ver club</button>`:''}`;
   return modalShell(p.name,`<div class="grid g2" style="align-items:start"><div>${radar(p,230)}</div><div>
    <div class="row" style="gap:6px;margin-bottom:10px">${posTag(p.pos,p)}<span class="chip">${flag(p.nat,12)} ${NAT[p.nat].nm}</span><span class="chip">${p.age} años</span><span class="chip ${rateOf(p)>=1.2?'good':rateOf(p)<0.9?'bad':''}" title="${esc(TRAITS[p.tr][2])}">${traitOf(p)}</span>${p.tl?'<span class="chip info">En venta</span>':''}${p.h?'<span class="chip gold">Cantera</span>':''}${confChip(p)}</div>
    ${roleBlock(p)}
    ${evolBlock(p)}
+   ${typeof moraleHTML==='function'?moraleHTML(p):''}${typeof planHTML==='function'?planHTML(p):''}
    <div class="row" style="gap:12px;margin-bottom:8px"><div><div class="lbl">Nivel</div><div class="num" style="font-size:44px;line-height:1">${showOvr(p)}</div></div><div style="flex:1">${potBar(p)}</div></div>
    <div class="kv"><span>Club</span><span>${cl}</span></div><div class="kv"><span>Contrato</span><b>30 jun ${p.ce+1}</b></div><div class="kv"><span>Salario</span><b>${s.e1===0||ctx!=='other'?EUR(p.w)+'/sem':'≈ '+EUR(wageOf({...p,ovr:midOvr(p),pot:midPot(p)}))+'/sem'}</b></div><div class="kv"><span>Valor</span><b>${ctx==='other'?'≈ ':''}${EUR(ctx==='other'?approxValue(p):valueOf(p))}</b></div>
    ${ctx!=='other'?`<div class="kv"><span>Temporada</span><b>${p.ap} part. · ${p.g} goles</b></div><div class="kv"><span>Condición</span><span style="width:50%">${fitBar(p.fit)}</span></div>`:''}${p.inj?`<div class="kv"><span>Lesión</span><b class="bad">${p.inj} semanas</b></div>`:''}</div></div>
@@ -171,8 +172,8 @@ function endMatchUI(){
   const M=ms.M;
   if(needsDeciderUI(M)){M.pen=penWin(M);feedAdd({m:M.m,t:'goal',home:M.pen.h>M.pen.a,txt:`Tanda de penaltis: ${M.pen.h}-${M.pen.a}.`});}
   const pk=S.pend&&S.pend.kind==='tn',comp=pk?(S.pend.nm+' · '+S.pend.rn):null;
-  if(pk)commitTournMatch(M);else commitUserMatch(M);
-  S.mres=S.mres||[];S.mres.push({Y:userYear(),t:S.t,h:M.hid,a:M.aid,hg:M.hg,ag:M.ag,comp,pen:M.pen||null});
+  if(M.youth)commitYouthMatch(M);else if(M.nt)commitNtMatch(M);else if(pk)commitTournMatch(M);else commitUserMatch(M);
+  if(!M.youth&&!M.nt){S.mres=S.mres||[];S.mres.push({Y:userYear(),t:S.t,h:M.hid,a:M.aid,hg:M.hg,ag:M.ag,comp,pen:M.pen||null});}
   const sum=matchSummary(M),me=ms.side==='h',pos=sum.pos;
   const row=(l,a,b)=>`<div class="l">${a}</div><div class="c">${l}</div><div class="r">${b}</div>`;
   $('#mScore').textContent=`${M.hg}-${M.ag}`;$('#mMin').textContent='Final';$('#mBar').style.width='100%';
@@ -214,6 +215,13 @@ document.addEventListener('click',e=>{
   if(a==='ddopen'){if(!S.dd||!S.dd.open)ddOpen();openModal({type:'dd'});return;}
   if(a==='ddnext'){ddNext();renderModal();save();return;}
   if(a==='ddclose'){const r=ddClose(+v);toast(r);renderModal();save();return;}
+  if(a==='prepdd'){const on=prepToggle(id);toast(on?'Operación preparada: se intentará cerrar el Deadline Day.':'Operación retirada.');save();renderModal();return;}
+  if(a==='nosell'){const on=toggleNoSell(id);toast(on?'Ya no recibirás ofertas por él.':'Volverá a recibir ofertas.');save();render();renderModal();return;}
+  if(a==='youthplay'){const M=newYouthMatch();if(!M){toast('No hay partido juvenil pendiente.');return;}UI.ms={M,side:S.yp.h===S.user?'h':'a',speed:1,ht:false,done:false,ball:[52.5,34],goalAt:0,committed:false};UI.m={type:'match'};drawMatch();startTimer();return;}
+  if(a==='youthsim'){if(S.yp){const lg=S.leagues[S.yp.lg];const q=S.yp;S.yp=null;youthAuto(lg,q);toast('Partido juvenil simulado.');save();render();}return;}
+  if(a==='ntplay'){const f=S.nt&&S.nt.fix[+v];if(!f){toast('No hay partido pendiente.');return;}const M=newNtMatch(f);UI.ms={M,side:'h',speed:1,ht:false,done:false,ball:[52.5,34],goalAt:0,committed:false};UI.m={type:'match'};drawMatch();startTimer();return;}
+  if(a==='ntsim'){const f=S.nt&&S.nt.fix[+v];if(f){S.nt.fix=S.nt.fix.filter(x=>x!==f);ntAuto(f);toast('Partido de selección simulado.');save();render();}return;}
+  if(a==='ntquit'){ask('¿Dejar la selección? Podrás recibir otra oferta más adelante.',()=>{S.nt=null;S.ntDecl=S.t;save();render();toast('Has dejado la selección.');},'Dejar el cargo',true);return;}
   if(a==='askfunds'){const r=askFunds();toast(r.msg);save();render();return;}
   if(a==='glory'){const ccs=LEAGUES.map(L=>L.cc),cc=pick(ccs),lg=S.leagues.find(l=>l.cc===cc&&l.tier===4);UI.setup.cc=cc;UI.setup.tier=4;UI.setup.idx=lg.ids.map(i=>S.clubs[i]).sort((x,y)=>x.skill-y.skill)[Math.min(3,lg.ids.length-1)].id;UI.setup.step='club';UI.setup.diff='hard';render();toast('Carretera a la gloria: elige tu club de 4ª división.');return;}
   if(a==='optexact'){S.opt=S.opt||{};S.opt.exact=!S.opt.exact;save();render();return;}

@@ -44,6 +44,11 @@ function analystInner(pid){
   return `<div class="analyst"><span class="grade ${col}">${d.g}</span><div><b>Analista</b><div class="sub">${esc(d.txt)}</div></div></div>`;
 }
 function updAnalyst(){const b=document.getElementById('analyst');if(b&&UI.m&&UI.m.type==='offer')b.innerHTML=analystInner(UI.m.pid);}
+/* canje: incluye a un jugador tuyo como parte del pago */
+function swapField(O){
+  const c=userClub(),mine=c.players.map(i=>S.players[i]).filter(p=>!p.inj).sort((a,b)=>valueOf(b)-valueOf(a)).slice(0,24);
+  return `<div class="field"><label for="of_swap">Incluir a un jugador tuyo (canje)</label><select id="of_swap"><option value="">Ninguno</option>${mine.map(p=>`<option value="${p.id}" ${O.swap===p.id?'selected':''}>${esc(p.name)} · ${POSL[p.pos]} ${p.ovr} · ${EUR(Math.round(valueOf(p)*0.85/1000)*1000)}</option>`).join('')}</select><div class="sub" style="margin-top:4px">El club vendedor lo valora al 85 % de su precio y se descuenta del traspaso.</div></div>`;
+}
 function mOffer(pid){
   const p=S.players[pid],c=userClub(),n=negGet(pid),O=UI.offer,free=p.where==='free',est=approxValue(p);
   const wEst=Math.max(300,Math.round(wageOf({...p,ovr:midOvr(p),pot:Math.max(midOvr(p),midPot(p))})/100)*100);
@@ -57,10 +62,12 @@ function mOffer(pid){
     if(!free)body+=`<div class="seg" style="margin:6px 0"><button class="${O.mode!=='loan'?'on':''}" data-act="nmode" data-v="buy">Traspaso</button><button class="${O.mode==='loan'?'on':''}" data-act="nmode" data-v="loan">Cesión con opción</button></div>`;
     if(O.mode==='loan'&&!free){
       body+=`${slider('of_lfee','Coste de la cesión',10000,Math.max(500000,Math.round(est*0.3/1e4)*1e4),10000,O.lfee,EUR)}${slider('of_opt','Opción de compra (0 = sin opción)',0,Math.round(est*2/1e5)*1e5,100000,O.opt,v=>v?EUR(v):'Sin opción')}
-      <p class="sub">El jugador viene hasta fin de temporada y cobra su salario completo. Si hay opción, decides en abril.</p>`;
+      <div class="seg" style="margin:8px 0"><button class="${!O.obl?'on':''}" data-act="lobl" data-v="0">Opción de compra</button><button class="${O.obl?'on':''}" data-act="lobl" data-v="1">Obligación de compra</button></div>
+      <p class="sub">El jugador viene hasta fin de temporada y cobra su salario completo. ${O.obl?'Con <b>obligación</b>, la compra se ejecuta sola al terminar (el club vendedor pide menos por la cesión). Si no puedes pagarla, la directiva se enfada.':'Si hay opción, decides en abril.'}</p>`;
       body+=`<div id="ofres">${O.res?resBox(O.res):''}</div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="mclose">Cancelar</button><button class="btn pri" data-act="loanin">Pedir cesión</button></div>`;
     }else{
       body+=`${slider('of_fee','Traspaso',0,feeMax,Math.max(50000,Math.round(feeMax/200/1e4)*1e4),O.fee,EUR)}${slider('of_sell','% de futura venta para el vendedor',0,30,5,O.sellOn,v=>v+'%')}${slider('of_bonus','Bono por rendimiento (tras 20 partidos)',0,Math.round(est*0.5/1e5)*1e5,50000,O.bonus,v=>v?EUR(v):'Sin bono')}
+      ${swapField(O)}
       ${young?`<div class="field"><label>Destino</label><div class="seg"><button class="${O.dest!=='acad'?'on':''}" data-act="ofdest" data-v="first">Primer equipo</button><button class="${O.dest==='acad'?'on':''}" data-act="ofdest" data-v="acad">Cantera</button></div></div>`:''}
       <div id="analyst">${analystInner(pid)}</div><div class="sub">Paciencia del club: <b>${dots(n.patience,3)}</b>${n.rival?` · <span class="warn">Rival interesado: ${esc(S.clubs[n.rival].name)}</span>`:''}</div>
       <div id="ofres">${O.res?resBox(O.res):''}</div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="mclose">Retirarse</button><button class="btn pri" data-act="negclub">Hacer oferta</button></div>`;
@@ -115,7 +122,8 @@ document.addEventListener('click',e=>{
   if(a==='pre'){const p=S.players[id];negPre(id);UI.offer={fee:0,wage:Math.max(estWage(p),wageAsk(p).w),years:3,sellOn:0,bonus:0,sign:Math.ceil(wageAsk(p).w*4/1000)*1000,dest:'first',mode:'buy',lfee:0,opt:0,res:null};openModal({type:'offer',pid:id});return;}
   if(a==='ofdest'){UI.offer.dest=v;renderModal();return;}
   if(a==='nmode'){UI.offer.mode=v;UI.offer.res=null;renderModal();return;}
-  if(a==='negclub'){const pid=UI.m.pid,O=UI.offer,r=negClub(pid,{fee:O.fee,sellOn:O.sellOn,bonus:O.bonus},O.dest);O.res=r;
+  if(a==='lobl'){UI.offer.obl=v==='1';if(UI.offer.obl&&!(UI.offer.opt>0))UI.offer.opt=Math.round(approxValue(S.players[UI.m.pid])*1.1/1e5)*1e5;renderModal();return;}
+  if(a==='negclub'){const pid=UI.m.pid,O=UI.offer,r=negClub(pid,{fee:O.fee,sellOn:O.sellOn,bonus:O.bonus,swap:O.swap==null?null:O.swap},O.dest);O.res=r;
     if(r.state==='accept'){const p=S.players[pid];O.wage=Math.max(O.wage,wageAsk(p).w);O.res=null;}
     if(r.state==='lost'){save();render();}renderModal();const ch=$('#chat');if(ch)ch.scrollTop=ch.scrollHeight;return;}
   if(a==='negcounter'){const pid=UI.m.pid,O=UI.offer,n=negGet(pid),c=(O.res.counters||[])[+v];if(!c)return;
@@ -124,8 +132,8 @@ document.addEventListener('click',e=>{
     renderModal();return;}
   if(a==='negplayer'){const pid=UI.m.pid,O=UI.offer,r=negPlayer(pid,{wage:O.wage,years:O.years,sign:O.sign});O.res=r;
     if(r.state==='signed'){const nm=S.players[pid].name;save();UI.m=null;$('#modalRoot').innerHTML='';render();toast(`${nm} firma con tu club.`);return;}renderModal();return;}
-  if(a==='loanin'){const pid=UI.m.pid,O=UI.offer,r=loanInEval(pid,{fee:O.lfee,opt:O.opt});
-    if(r.ok){const p=S.players[pid];loanInDo(pid,{fee:O.lfee,opt:O.opt});save();UI.m=null;$('#modalRoot').innerHTML='';render();toast(`${p.name} llega cedido.`);return;}
+  if(a==='loanin'){const pid=UI.m.pid,O=UI.offer,r=loanInEval(pid,{fee:O.lfee,opt:O.opt,obl:!!O.obl});
+    if(r.ok){const p=S.players[pid];loanInDo(pid,{fee:O.lfee,opt:O.opt,obl:!!O.obl});save();UI.m=null;$('#modalRoot').innerHTML='';render();toast(`${p.name} llega cedido.`);return;}
     O.res={state:'reject',msg:r.msg,counters:[]};renderModal();return;}
   if(a==='cnsend'){const r=counterIncoming(UI.m.mid,UI.cnt.fee);UI.cnt.res=r;UI.cnt.agreed=(r.state==='accept'||r.state==='counter')?r.fee:null;renderModal();return;}
   if(a==='cnaccept'){const err=acceptIncoming(UI.m.mid,UI.cnt.agreed);if(err)toast(err);else{toast('Venta cerrada.');}save();closeModal();return;}
@@ -138,3 +146,5 @@ document.addEventListener('input',e=>{
   if(id==='cn_fee'){const v=+t.value;UI.cnt.fee=v;$('#cn_feev').textContent=EUR(v);}
 });
 document.addEventListener('change',e=>{if(e.target.id==='tnsel'){UI.f.tn=e.target.value;render();}});
+
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='of_swap'&&UI.offer){UI.offer.swap=e.target.value?+e.target.value:null;const sw=UI.offer.swap!=null?S.players[UI.offer.swap]:null;if(sw){const v=Math.round(valueOf(sw)*0.85/1000)*1000;UI.offer.fee=Math.max(0,UI.offer.fee-v);}renderModal();}});

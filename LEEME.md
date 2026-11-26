@@ -1,4 +1,4 @@
-# Gaffer — Modo Carrera (v4.35)
+# Gaffer — Modo Carrera (v4.37)
 
 Abre **`index.html`** con doble clic en cualquier navegador (también en móvil). Se guarda solo en tu dispositivo (IndexedDB), **se instala como app (PWA) y abre sin conexión** (tras la primera visita) y no tiene anuncios ni pagos. Hay **6 ranuras de carrera** para jugar partidas simultáneas.
 
@@ -27,3 +27,6 @@ Abre **`index.html`** con doble clic en cualquier navegador (también en móvil)
 ## Del brief de 14 funciones
 Implementadas: 1 cantera todo el año, 2 potencial como rango con explicación de cada cambio, 3 Create-a-Club con filosofía y rival, 4 negociación con analista A–F, 5 y 6 simulación interactiva (tres modos) con xG y momentos decisivos, 7 pretemporada (torneo con premio, riesgo y moral) e informe semanal de entrenamiento, 8 gestión internacional **ligera** (convocatorias de tus jugadores en los parones, con efectos visibles), 9 Deadline Day por horas, 10 historia permanente y Carretera a la gloria, 11 patrocinador a elegir + pedir fondos, 13 medias ocultas, 14 retos mensuales y destituciones de entrenadores anunciadas con motivo.
 Pendientes: 8 dirigir una selección (calendario y plantilla propios), 12 jugador-mánager (no existe el modo jugador), pulir 14 (fichajes de entrenadores con motivo más detallado). Todas las cifras nuevas son propuestas a validar con CANTERA y con jugadores reales.
+
+## Novedades v4.37
+Exportar/importar partida a archivo `.gaffer`; potencial dinámico en el primer equipo; cesión con obligación de compra, canjes (tuyos y de la CPU), operaciones preparadas para el Deadline Day, memoria de ofertas y «no escuchar ofertas»; moral por jugador y plan de entrenamiento individual (hasta 5); liga juvenil jugable con el motor; dirigir una selección (2 partidos por parón).
