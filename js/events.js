@@ -71,7 +71,8 @@ function callupWeek(){
     p.mv=Math.min(1.15,(p.mv||1)*1.03);
   });
   out.slice(0,5).forEach(t=>news(t,'g'));
-  if(out.length)inbox({ty:'info',title:'Parón de selecciones',body:`${out.length} de tus jugadores han sido convocados. Estarán fuera esta semana; una convocatoria puede beneficiar (crecimiento, valor) o complicar (lesión) a tu plantilla.`});
+  if(S.callY!==userYear()){S.callY=userYear();S.callN=0;}
+  if(out.length&&S.callN<2){S.callN++;inbox({ty:'info',title:'Parón de selecciones',body:`${out.length} de tus jugadores han sido convocados. Estarán fuera esta semana; una convocatoria puede beneficiar (crecimiento, valor) o complicar (lesión) a tu plantilla.`});}
 }
 const isAway=p=>!!(p.away&&p.away>=S.t);
 
