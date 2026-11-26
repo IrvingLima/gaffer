@@ -46,11 +46,13 @@ function attrs(pos,ovr){
 }
 /* ---- precios tipo FIFA: el valor lo marca sobre todo el nivel actual; el potencial solo da una prima limitada a los jovenes ---- */
 /* margen máximo de crecimiento según la edad: el potencial siempre es coherente con la edad (y con el precio, que lo premia con tope) */
-const potHead=a=>a<=16?30:a===17?27:a===18?23:a===19?19:a===20?15:a===21?12:a===22?9:a===23?6:a===24?4:a===25?3:a===26?2:0;
+const potHead=a=>a<=16?40:a===17?35:a===18?29:a===19?23:a===20?18:a===21?14:a===22?10:a===23?7:a===24?5:a===25?3:a===26?2:0;
 const baseVal=ovr=>450000*Math.exp(0.19*(ovr-60));
 const ageF=a=>a<=26?1:a===27?0.95:a===28?0.85:a===29?0.74:a===30?0.62:a===31?0.5:a===32?0.38:a===33?0.28:a===34?0.2:0.12;
+/* precio de traspaso: curva propia más suave que la de los salarios (los fichajes son asequibles; la propuesta se valida con CANTERA) */
+const feeBase=ovr=>324000*Math.exp(0.175*(ovr-60));
 function valueOf(p){
-  let v=baseVal(p.ovr)*ageF(p.age)*(p.pos==='GK'?0.8:p.pos==='FWD'?1.08:1);
+  let v=feeBase(p.ovr)*ageF(p.age)*(p.pos==='GK'?0.8:p.pos==='FWD'?1.08:1);
   if(p.age<=25&&p.pot>p.ovr){const w=p.age<=19?1:p.age<=21?0.65:p.age<=23?0.3:0.12;v*=1+Math.min(1.2,(p.pot-p.ovr)*0.028)*w;}
   if(v>1.2e8)v=1.2e8+(v-1.2e8)*0.35;
   v=Math.max(15000,v);

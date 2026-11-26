@@ -36,10 +36,10 @@ function marketPool(F){
 function applyPreset(list,F){
   const c=userClub(),pre=F.preset;
   if(pre==='cheap'||F.price==='budget')return list.filter(p=>estFee(p)<=c.budget);
-  if(pre==='gems')return list.filter(p=>p.age<=22&&midPot(p)-midOvr(p)>=8&&estFee(p)<=c.budget*1.0);
+  if(pre==='gems')return list.filter(p=>p.age<=22&&midPot(p)-midOvr(p)>=8&&midPot(p)>=c.skill+4&&estFee(p)<=c.budget*1.0);
   if(pre==='exp')return list.filter(p=>p.ce<=S.Y);
   if(pre==='vets')return list.filter(p=>p.age>=29&&midOvr(p)>=c.skill-8&&estFee(p)<=c.budget);
-  if(pre==='reach')return list.filter(p=>reachOf(p)===3);
+  if(pre==='reach')return list.filter(p=>midOvr(p)>=c.skill-2&&reachOf(p)===3);
   return list;
 }
 function visiblePlayers(){

@@ -6,6 +6,7 @@ function renderModal(){
   if(m.type==='player')html=mPlayer(m.pid);
   else if(m.type==='offer')html=mOffer(m.pid);
   else if(m.type==='dd')html=mDeadline();
+  else if(m.type==='slotpick')html=mSlotPick(m.i);
   else if(m.type==='renew')html=mRenew(m.pid);
   else if(m.type==='loan')html=mLoan(m.pid);
   else if(m.type==='mission')html=mMission(m);

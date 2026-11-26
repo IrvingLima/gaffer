@@ -27,10 +27,10 @@ function renderStart(){
   applyAccent();
   $('#app').innerHTML=`<div class="setup"><div class="row spread"><div class="wordmark">Gaffer<i>.</i></div><button class="btn sm ghost" data-act="theme" aria-label="Cambiar tema">${ic('sun')}</button></div>
   <div class="tag">Tu carrera.<br>Tu <i>mundo</i>.</div>
-  <p class="sub" style="max-width:600px;font-size:16px">Dirige un club de ${LEAGUES.length} países, ojea talento en 47 naciones, forma a tus promesas y salta de club en club. Sin anuncios ni pagos: se guarda solo y funciona sin conexión.</p>
+  <p class="sub" style="max-width:600px;font-size:16px">Dirige un club de ${LEAGUES.length} países, ojea talento en ${NATS.length} naciones, forma a tus promesas y salta de club en club. Sin anuncios ni pagos: se guarda solo y funciona sin conexión.</p>
   ${slotsPanel()}
   <div class="grid g3 stk" style="margin-top:34px"><div class="stat"><div class="lbl">Mundo</div><div class="num">${LEAGUES.reduce((a,L)=>a+L.t.reduce((b,x)=>b+x[1],0),0).toLocaleString('es-ES')} clubes</div><div class="sub">${LEAGUES.length*4} divisiones en ${LEAGUES.length} países, con copas y competiciones continentales</div></div>
-  <div class="stat"><div class="lbl">Talento</div><div class="num">+27.000</div><div class="sub">jugadores y 47 naciones para ojear</div></div>
+  <div class="stat"><div class="lbl">Talento</div><div class="num">+27.000</div><div class="sub">jugadores y ${NATS.length} naciones para ojear</div></div>
   <div class="stat"><div class="lbl">Carrera</div><div class="num">Sin fin</div><div class="sub">ascensos, ofertas y mercado de entrenadores</div></div></div></div>`;
 }
 const diffPicker=U=>`<div class="lbl" style="margin-top:22px">Dificultad</div><div class="grid g3 keep" role="group" aria-label="Dificultad">${Object.entries(DIFFS).map(([k,d])=>`<button class="ccard" style="min-height:0;padding:12px 14px" data-act="diff" data-v="${k}" aria-pressed="${(U.diff||'normal')===k}"><b>${d.nm}</b><span class="sub">${d.d}</span></button>`).join('')}</div>`;
@@ -175,10 +175,7 @@ function vTeam(){
   }else if(UI.sub.team==='lineup'){
     const L=lineup(c.id),r=ratings(c.id,L,false),ins=c.ins||{};
     const bar=(n,v)=>`<div class="stline"><span>${n}</span><div class="bar neu"><i style="width:${clamp((v-40)*2,0,100)}%"></i></div><b class="num" style="font-size:18px;text-align:right">${Math.round(v)}</b></div>`;
-    h+=`<div class="grid g2" style="align-items:start"><div class="panel"><div class="hd"><h2>Once previsto</h2><span class="chip">${c.form}</span></div>${pitchSVG(c,L)}</div>
-    <div><div class="panel"><h2 style="margin-bottom:10px">Con balón</h2><div class="row" style="gap:6px">${Object.keys(FORMS).map(f=>`<button class="btn sm ${c.form===f?'on':''}" data-act="form" data-v="${f}">${f}</button>`).join('')}</div>
-     <h2 style="margin:16px 0 10px">Sin balón</h2><div class="row" style="gap:6px"><button class="btn sm ${!c.formOut?'on':''}" data-act="formout" data-v="">Igual</button>${Object.keys(FORMS).map(f=>`<button class="btn sm ${c.formOut===f?'on':''}" data-act="formout" data-v="${f}">${f}</button>`).join('')}</div>
-     <p class="sub">Más defensas sin balón suben tu defensa y bajan tu ataque.</p></div>
+    h+=lineupMainHTML(c,L)+`<div class="grid g2" style="align-items:start"><div>
     <div class="panel"><h2 style="margin-bottom:10px">Instrucciones</h2><div class="lbl">Mentalidad</div><div class="seg" style="margin:6px 0 12px">${[['defense','Defensiva'],['balance','Equilibrada'],['attack','Ofensiva']].map(([k,l])=>`<button class="${c.tactic===k?'on':''}" data-act="tactic" data-v="${k}">${l}</button>`).join('')}</div>
      <div class="grid g2 stk"><div><div class="lbl">Ritmo</div><div class="seg" style="margin:6px 0">${[['slow','Bajo'],['normal','Normal'],['fast','Alto']].map(([k,l])=>`<button class="${(ins.tempo||'normal')===k?'on':''}" data-act="ins" data-g="tempo" data-v="${k}">${l}</button>`).join('')}</div></div>
      <div><div class="lbl">Línea defensiva</div><div class="seg" style="margin:6px 0">${[['deep','Baja'],['normal','Media'],['high','Alta']].map(([k,l])=>`<button class="${(ins.line||'normal')===k?'on':''}" data-act="ins" data-g="line" data-v="${k}">${l}</button>`).join('')}</div></div>
@@ -258,7 +255,7 @@ function vScout(){
       cells.push(`<button class="tile k${lvl} ${hasLeague(cc)?'lg':''} ${UI.sel.nat===cc?'sel':''}" data-act="nat" data-v="${cc}" aria-label="${NAT[cc].nm}${pin?', con ojeador':''}">${cc}${pin?'<span class="pin"></span>':''}</button>`);
     }
     h+=`<div class="panel"><div class="hd"><h2>Mapa de ojeo</h2><div class="legend"><span><i style="background:var(--s1);border:1px solid var(--line)"></i>sin informes</span><span><i style="background:color-mix(in srgb,var(--acc) 42%,var(--s1))"></i>conocida</span><span><i style="background:var(--acc)"></i>bien cubierta</span><span><i style="background:var(--gold)"></i>liga simulada</span></div></div>
-    ${worldMapHTML(sc)}<details class="mapfold"><summary class="sub">Ver como lista de naciones</summary><div class="map">${cells.join('')}</div></details><p class="sub" style="margin-bottom:0">Toca una nación del mapa para ver su talento y asignar un ojeador. Tus ${sc.length} ojeadores trabajan una nación cada uno; sus viajes se ven animados.</p></div>`;
+    ${worldMapHTML(sc)}<details class="mapfold" ${typeof innerWidth!=='undefined'&&innerWidth<640?'open':''}><summary class="sub">Lista de naciones (más fácil de tocar en el móvil)</summary><div class="map">${(typeof innerWidth!=='undefined'&&innerWidth<640?cells.filter(x=>x!=='<div></div>'):cells).join('')}</div></details><p class="sub" style="margin-bottom:0">Toca una nación del mapa para ver su talento y asignar un ojeador. Tus ${sc.length} ojeadores trabajan una nación cada uno; sus viajes se ven animados.</p></div>`;
     if(UI.sel.nat)h+=natPanel(UI.sel.nat);
   }else if(UI.sub.scout==='scouts'){
     h+=`<div class="panel"><div class="hd"><h2>Ojeadores</h2><button class="btn sm" data-act="goto" data-v="club:staff">Contratar más</button></div>${sc.length?sc.map(s=>{const m=S.scout.miss[s.id],best=Object.entries(s.kn).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>`${k} ${v}`).join(' · ');
@@ -286,8 +283,8 @@ function natPanel(cc){
   ${uniq.length?`<div class="lbl" style="margin-bottom:8px">Mejores hallazgos</div><div class="fcs">${uniq.map(p=>fcard(p,{extra:p.club!=null&&S.clubs[p.club]?S.clubs[p.club].short:''})).join('')}</div>`:'<div class="empty">Aún no hay informes de esta nación.</div>'}</div>`;
 }
 function playerTable(list,actions){
-  return `<div class="scroll"><table><tr><th>Pos</th><th>Jugador</th><th class="n">Edad</th><th class="n">Nivel</th><th class="n">Pot.</th><th class="n">Valor</th><th>Info</th>${actions?'<th></th>':''}</tr>
-  ${list.map(p=>`<tr class="click" data-act="player" data-id="${p.id}"><td>${posTag(p.pos,p)}</td><td><div class="pname"><b>${esc(p.name)}</b><span class="sub">${flag(p.nat,11)} ${p.nat} · ${esc(clubLabel(p))}</span></div></td><td class="n">${p.age}</td><td class="n">${ovrChip(p)}</td><td class="n gold">${showPot(p)}</td><td class="n">${EUR(approxValue(p))}</td><td>${confChip(p)}</td>
+  return `<div class="scroll"><table><tr><th>Pos</th><th>Jugador</th><th class="n hm">Edad</th><th class="n">Nivel</th><th class="n">Pot.</th><th class="n hm">Valor</th><th class="hm">Info</th>${actions?'<th></th>':''}</tr>
+  ${list.map(p=>`<tr class="click" data-act="player" data-id="${p.id}"><td>${posTag(p.pos,p)}</td><td><div class="pname"><b>${esc(p.name)}</b><span class="sub">${flag(p.nat,11)} ${p.nat} · ${esc(clubLabel(p))}</span></div></td><td class="n hm">${p.age}</td><td class="n">${ovrChip(p)}</td><td class="n gold">${showPot(p)}</td><td class="n hm">${EUR(approxValue(p))}</td><td class="hm">${confChip(p)}</td>
   ${actions?`<td class="n"><button class="btn xs ${S.short.includes(p.id)?'on':''}" data-act="short" data-id="${p.id}" aria-label="Lista corta">${ic('star','sm')}</button></td>`:''}</tr>`).join('')||'<tr><td colspan="8" class="empty">Sin resultados.</td></tr>'}</table></div>`;
 }
 function approxValue(p){const q={...p,ovr:midOvr(p),pot:Math.max(midOvr(p),midPot(p))};return valueOf(q);}

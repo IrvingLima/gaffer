@@ -1,7 +1,7 @@
 "use strict";
 /* ================= base de interfaz ================= */
 const UI={tab:'home',sub:{team:'squad',acad:'squad',scout:'map',market:'search',club:'staff',league:'table',career:'profile'},
-  f:{sq:'ALL',mk:{pos:'ALL',nat:'ALL',minOvr:0,maxAge:40,q:'',sort:'ovr',only:'ALL'},rep:{pos:'ALL',maxAge:40},lg:null,wl:null},
+  f:{sq:'ALL',cards:(typeof innerWidth!=='undefined'&&innerWidth<640),mk:{pos:'ALL',nat:'ALL',minOvr:0,maxAge:40,q:'',sort:'ovr',only:'ALL'},rep:{pos:'ALL',maxAge:40},lg:null,wl:null},
   sel:{nat:null},m:null,setup:{step:'country',cc:null,tier:1,idx:0,mgr:'',create:{city:'',suf:'',c1:'#2fbf84',c2:'#f2f2f0',pat:0,stad:''}},mt:null,drawer:{}};
 const ICONS={
  home:'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10',users:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8',

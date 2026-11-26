@@ -46,7 +46,7 @@ const GENS={
  nl:()=>pick(['van ','van der ','van den ','de ','ten ','op de ',''])+cap(pick('berg,broek,dijk,hoek,laar,veld,wijk,beek,donk,hout,kamp,maat,poel,stede,vliet,wolde'.split(',')))
 };
 /* segundo apellido (mundo hispano) */
-const HISP=new Set(['ES','MX','AR','CO','CL','UY','PE','EC','PY','BO']);
+const HISP=new Set(['ES','MX','AR','CO','CL','UY','PE','EC','PY','BO','VE','CR','PA','HN','GT','SV','CU','DO']);
 function genName(nat){
   const nt=NAT[nat],P=POOLS[nt.pool];
   const st=(typeof S!=='undefined'&&S)?(S.nm=S.nm||{}):{};

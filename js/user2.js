@@ -232,7 +232,7 @@ function eventsWeek(){
       ch:[{k:'promise',l:'Prometer minutos'},{k:'wait',l:'Que espere'},{k:'loan',l:'Buscar una cesión'}]});return;}
   }
   if(r<0.55&&!open('interest')){
-    const cand=S.ac.list.map(i=>S.players[i]).filter(p=>p.known&&p.pot>=78&&!lockDays(p));
+    const cand=S.ac.list.map(i=>S.players[i]).filter(p=>p.known&&p.pot>=72&&!lockDays(p));
     if(cand.length){const p=pick(cand),b=pick(S.clubs.filter(x=>x.id!==c.id&&x.skill>=c.skill-3)),fee=Math.round(valueOf(p)*1.25/1000)*1000;
       inbox({ty:'interest',title:`${b.name} quiere a ${p.name}`,body:`${b.name} ofrece ${EUR(fee)} por tu promesa ${p.name} (${p.age} años, potencial ${p.pot}).`,pid:p.id,cid:b.id,fee,exp:S.t+10,ch:[{k:'sell',l:'Vender'},{k:'refuse',l:'Rechazar'}]});return;}
   }

@@ -128,7 +128,7 @@ function endSeason(){
     const gateW=c.cap*clamp(0.42+c.rep/160,0.2,1)*c.price0*0.5,R=W*1.3,rest=Math.max(R-gateW,R*0.4);
     c.tv=Math.round(rest*0.5);c.sp=Math.round(rest*0.5);c.staffC=Math.round(W*0.04);c.wageCap=Math.round(W*1.12);
     if(c.budget<0)c.budget=0;
-    const cap=W*52*0.6;if(c.budget>cap)c.budget-=(c.budget-cap)*0.6;
+    const cap=W*52*0.9;if(c.budget>cap)c.budget-=(c.budget-cap)*0.6;
   });
   // 6. AI managers: cese de los peores
   S.clubs.forEach(c=>{if(c.id===S.user||!c.mg||calOf(c.cc))return;
@@ -142,7 +142,7 @@ function endSeason(){
     S.ac.list.concat(S.ac.loans).forEach(id=>{S.players[id].known=true;});
     returnLoans(sum);graduates(sum);genIntake();S.staff.hired=S.staff.hired.filter(s=>{s.ce--;if(s.ce<=0){sum.staffLeft=(sum.staffLeft||[]).concat(s.nm);return false;}return true;});
     refreshStaffMarket();
-    uc.wageCap=Math.round(wageBill(uc)*1.12);
+    uc.wageCap=Math.round(wageBill(uc)*1.3);
     if(ucCal){inbox({ty:'season',title:'Cierre del año deportivo',body:'Con el 30 de junio vencen contratos y se renueva la cantera. Tu liga sigue en juego.'});}
     else{genObjectives();
     inbox({ty:'season',title:`Resumen de la temporada ${sum.label}`,body:`Has terminado ${sum.user.pos}º en ${sum.user.lg}. Objetivo: ${sum.user.rankOk?'cumplido':'fallado'}.`});
@@ -234,6 +234,7 @@ function startCareer(cid,mgrName,opts){
   initClubForUser(false);
   if(opts&&opts.diff)S.diff=opts.diff;S.diff=S.diff||'normal';
   S.clubs[cid].budget=Math.round(S.clubs[cid].budget*dif().budget/1e4)*1e4;
+  S.clubs[cid].wageCap=Math.round(wageBill(S.clubs[cid])*1.3);
   if(S.clubs[cid].phil==='fichajes'){S.clubs[cid].budget=Math.round(S.clubs[cid].budget*1.15/1e4)*1e4;S.clubs[cid].wageCap=Math.round(S.clubs[cid].wageCap*1.1);}
   if(opts&&opts.budget!=null)S.clubs[cid].budget=opts.budget;
   news(`Bienvenido a ${S.clubs[cid].name}. Temporada ${userSeasonLabel()}.`,'j');

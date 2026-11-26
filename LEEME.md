@@ -1,9 +1,9 @@
-# Gaffer — Modo Carrera (v4.24)
+# Gaffer — Modo Carrera (v4.35)
 
 Abre **`index.html`** con doble clic en cualquier navegador (también en móvil). Se guarda solo en tu dispositivo (IndexedDB), **se instala como app (PWA) y abre sin conexión** (tras la primera visita) y no tiene anuncios ni pagos. Hay **6 ranuras de carrera** para jugar partidas simultáneas.
 
 ## Qué incluye
-- **20 países, 80 divisiones, 1.388 clubes y ~35.000 jugadores.** Europa (España, Inglaterra, Alemania, Italia, Francia, Portugal, Rusia, Países Bajos, Turquía, Bélgica, Escocia, Austria, Suiza, Dinamarca, Polonia, Grecia) y América con temporada de año natural (Brasil, Argentina, México, EE. UU.). Cada país tiene 4 divisiones, copa nacional, ventanas de fichajes de fechas reales y, los europeos, plazas continentales.
+- **20 países con liga (80 divisiones, 1.388 clubes, ~35.000 jugadores) y 118 naciones para ojear (Japón, China, Australia, Sudáfrica, Canadá, Suecia…).** Europa (España, Inglaterra, Alemania, Italia, Francia, Portugal, Rusia, Países Bajos, Turquía, Bélgica, Escocia, Austria, Suiza, Dinamarca, Polonia, Grecia) y América con temporada de año natural (Brasil, Argentina, México, EE. UU.). Cada país tiene 4 divisiones, copa nacional, ventanas de fichajes de fechas reales y, los europeos, plazas continentales.
 - **Temporada por país:** los países de año natural cierran su liga en diciembre y arrancan en su pretemporada; el 30 de junio solo cambian contratos y cantera. Las carreras empiezan siempre al principio de la temporada de tu liga.
 - **Mercado mundial estilo FIFA:** buscas en todas las ligas, filtras por posición concreta, liga, nacionalidad, edad, nivel, potencial y precio, ordenas por calidad/precio, margen de crecimiento, salario… y ofertas por **cualquier** jugador. Atajos: «Alcanzables ahora», «Promesas baratas», «Fin de contrato», «Veteranos útiles». Indica si el precio y el salario te entran. **Pre-contrato** gratis desde enero a quien acaba contrato en junio.
 - **Negociación en dos fases** (club y agente) con contraofertas, cláusulas, rivales que pujan, cesión con opción, **analista A–F** y **medidor del límite salarial** que se mueve con el deslizador.

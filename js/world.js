@@ -1,7 +1,7 @@
 "use strict";
 /* ================= generación del mundo ================= */
 const STAD_PRE={ES:['Estadio','Estadio Municipal','Campo'],EN:['Stadium','Park','Ground'],DE:['Stadion','Arena','Sportpark'],IT:['Stadio','Stadio Comunale','Arena'],FR:['Stade','Stade Municipal','Parc'],PT:['Estádio','Estádio Municipal','Campo'],RU:['Stadion','Arena','Dinamo Park'],NL:['Stadion','Arena','Sportpark'],TR:['Stadyum','Arena','Şehir Stadı'],BE:['Stadion','Stade','Arena'],SC:['Park','Stadium','Ground'],AT:['Stadion','Arena','Sportplatz'],CH:['Stadion','Stade','Arena'],DK:['Stadion','Park','Arena'],PL:['Stadion','Arena','Stadion Miejski'],GR:['Stadio','Arena','Stadio Dimotiko'],BR:['Estádio','Arena','Estádio Municipal'],AR:['Estadio','Cancha','Estadio Municipal'],MX:['Estadio','Estadio Olímpico','Estadio Municipal'],US:['Stadium','Field','Park']};
-const FORM_LIST=['4-4-2','4-3-3','3-5-2','4-2-3-1','5-3-2','4-5-1','3-4-3'];
+const FORM_LIST=['4-4-2','4-3-3','3-5-2','4-2-3-1','5-3-2','4-5-1','3-4-3','4-3-1-2','4-1-4-1','4-3-2-1','4-2-2-2'];
 function pickNat(cc){
   if(Math.random()<0.7)return cc;
   const tot=NATS.reduce((s,n)=>s+n[4],0);let r=Math.random()*tot;
@@ -63,7 +63,7 @@ function setFinance(c){
   if(gateW>0.5*R){price*=0.5*R/gateW;gateW=0.5*R;}
   c.price0=Math.round(price*10)/10;c.price=c.price0;
   const rest=R-gateW;c.tv=Math.round(rest*0.5);c.sp=Math.round(rest*0.5);c.staffC=Math.round(W*0.04);
-  c.budget=Math.round(W*52*rnd(0.28,0.5)*[1,0.8,0.6,0.5][c.tier-1]/1e4)*1e4;
+  c.budget=Math.round(W*52*rnd(0.5,0.95)*[1.1,1,0.95,0.9][c.tier-1]/1e4)*1e4;
   c.wageCap=Math.round(W*1.12);
 }
 /* clase de agentes libres de cada verano: estrellas veteranas, jugadores sólidos, promesas liberadas y relleno */

@@ -5,31 +5,52 @@ const staffAb=role=>{const c=userClub();if(!c||!S.staff)return 8;const s=S.staff
 const aiAb=c=>clamp(Math.round(5+(c.skill-60)/3.2),3,15);
 const sAb=(cid,role)=>cid===S.user?staffAb(role):aiAb(S.clubs[cid]);
 
+/* asignación óptima jugador→hueco (algoritmo húngaro): nadie «roba» el sitio de un especialista */
+function hungarian(cost){
+  const n=cost.length,m=cost[0]?cost[0].length:0,INF=1e15,u=Array(n+1).fill(0),v=Array(m+1).fill(0),p=Array(m+1).fill(0),way=Array(m+1).fill(0);
+  for(let i=1;i<=n;i++){
+    p[0]=i;let j0=0;const minv=Array(m+1).fill(INF),used=Array(m+1).fill(false);
+    do{used[j0]=true;const i0=p[j0];let delta=INF,j1=0;
+      for(let j=1;j<=m;j++)if(!used[j]){const cur=cost[i0-1][j-1]-u[i0]-v[j];if(cur<minv[j]){minv[j]=cur;way[j]=j0;}if(minv[j]<delta){delta=minv[j];j1=j;}}
+      for(let j=0;j<=m;j++){if(used[j]){u[p[j]]+=delta;v[j]-=delta;}else minv[j]-=delta;}
+      j0=j1;}while(p[j0]!==0);
+    do{const j1=way[j0];p[j0]=p[j1];j0=j1;}while(j0);
+  }
+  const res=Array(n).fill(-1);for(let j=1;j<=m;j++)if(p[j])res[p[j]-1]=j-1;return res;
+}
 function lineup(cid,useOut){
   const c=S.clubs[cid],fk=useOut?(c.formOut||c.form):c.form,f=FORMS[fk];
   let pl=c.players.map(i=>S.players[i]).filter(p=>p&&!p.inj&&!(p.away&&p.away>=S.t));
   if(pl.length<11)pl=c.players.map(i=>S.players[i]).filter(Boolean);
   const SL=FSLOTS[fk]||FSLOTS['4-4-2'];
   const grpOf=i=>i===0?'GK':i<=f[0]?'DEF':i<=f[0]+f[1]?'MID':'FWD';
-  const used=new Set(),xi=[];
   const sc=p=>eff(p)+(p.lock==='start'?100:0);
-  SL.forEach((sp,i)=>{
-    const grp=grpOf(i);
-    let best=null,bs=-1e9,bp=0;
-    pl.forEach(p=>{
-      if(used.has(p.id)||p.lock==='rest')return;
-      if(grp==='GK'?p.pos!=='GK':p.pos==='GK')return;
-      const pen=posPen(p,sp),s=sc(p)-pen+psBonus(p,grp);
-      if(s>bs){bs=s;best=p;bp=pen;}
-    });
-    if(!best){ // hueco sin candidato natural: cualquiera disponible, con castigo
-      const rest=pl.filter(p=>!used.has(p.id)&&(grp==='GK'||p.pos!=='GK')).sort((a,b)=>sc(b)-sc(a));
-      best=rest[0];bp=14;
-    }
-    if(best){used.add(best.id);xi.push({p:best,slot:grp,spos:sp,lat:SPLAT[sp]!==undefined?SPLAT[sp]:2,e:eff(best)-bp+psBonus(best,grp)});}
-    else xi.push({p:{id:-1-i,name:'—',pos:grp,ovr:40,fit:100,a:[40,40,40,40,40,40],ps:[]},slot:grp,spos:sp,lat:2,e:40});
-  });
-  return {xi,bench:pl.filter(p=>!used.has(p.id)).sort((a,b)=>eff(b)-eff(a)).slice(0,9)};
+  const slots=Array(SL.length).fill(null),used=new Set();
+  // 1) huecos fijados a mano por el entrenador
+  const fix=(c.fix&&c.fix[fk])||{};
+  Object.keys(fix).forEach(k=>{const i=+k,p=S.players[fix[k]];if(p&&c.players.includes(p.id)&&!p.inj&&!(p.away&&p.away>=S.t)&&!used.has(p.id)&&i<SL.length){slots[i]=p;used.add(p.id);}});
+  // 2) el resto, por asignación óptima
+  const freeIdx=SL.map((_,i)=>i).filter(i=>!slots[i]);
+  const cand=pl.filter(p=>!used.has(p.id)&&p.lock!=='rest');
+  if(freeIdx.length&&cand.length){
+    const cost=freeIdx.map(i=>cand.map(p=>{const grp=grpOf(i);if((grp==='GK')!==(p.pos==='GK'))return 1e6;return -(sc(p)-posPen(p,SL[i])+psBonus(p,grp));}));
+    const asg=hungarian(cost);
+    freeIdx.forEach((i,k)=>{const j=asg[k];if(j>=0&&cost[k][j]<1e5){slots[i]=cand[j];used.add(cand[j].id);}});
+  }
+  // 3) huecos sin candidato natural: cualquiera disponible, con castigo
+  freeIdx.forEach(i=>{if(slots[i])return;const grp=grpOf(i),rest=pl.filter(p=>!used.has(p.id)&&(grp==='GK'||p.pos!=='GK')).sort((a,b)=>sc(b)-sc(a));if(rest[0]){slots[i]=rest[0];used.add(rest[0].id);slots[i]._forced=true;}});
+  const xi=SL.map((sp,i)=>{const p=slots[i],grp=grpOf(i);
+    if(!p)return {p:{id:-1-i,name:'—',pos:grp,ovr:40,fit:100,a:[40,40,40,40,40,40],ps:[]},slot:grp,spos:sp,lat:2,e:40,pen:99,idx:i};
+    const forced=p._forced;delete p._forced;const pen=forced?14:posPen(p,sp);
+    return {p,slot:grp,spos:sp,lat:SPLAT[sp]!==undefined?SPLAT[sp]:2,e:eff(p)-pen+psBonus(p,grp),pen,idx:i,fixed:!!(fix[i]&&fix[i]===p.id)};});
+  return {xi,bench:pl.filter(p=>!used.has(p.id)).sort((a,b)=>eff(b)-eff(a)).slice(0,9),form:fk};
+}
+/* compara todos los sistemas con tu plantilla: fuerza total y cuántos juegan en su posición natural */
+function formationReport(cid){
+  const c=S.clubs[cid],bak=c.form,res=[];
+  Object.keys(FORMS).forEach(fk=>{c.form=fk;const L=lineup(cid),nat=L.xi.filter(x=>x.pen===0).length,near=L.xi.filter(x=>x.pen>0&&x.pen<=1.5).length,r=ratings(cid,L,false);
+    res.push({fk,score:L.xi.reduce((s,x)=>s+x.e,0)/11,nat,near,off:L.xi.filter(x=>x.pen>=4).length,att:r.att,mid:r.mid,def:r.def});});
+  c.form=bak;return res.sort((a,b)=>b.score-a.score);
 }
 function ratings(cid,L,home,mod){
   const c=S.clubs[cid],isU=cid===S.user;
