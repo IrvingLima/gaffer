@@ -8,7 +8,7 @@ const pendingCount=()=>pendingMsgs().length;
 function focusKey(){const a=document.activeElement;if(!a||a===document.body||!a.dataset)return null;const d=a.dataset;if(!(d.tab||d.act||a.id))return null;return {tab:d.tab,act:d.act,id:d.id,v:d.v,g:d.g,eid:a.id};}
 function restoreFocus(k){
   if(!k)return;let sel=k.eid?'#'+k.eid:k.tab?`[data-tab="${k.tab}"]`:`[data-act="${k.act}"]`+(k.id?`[data-id="${k.id}"]`:'')+(k.v?`[data-v="${k.v}"]`:'')+(k.g?`[data-g="${k.g}"]`:'');
-  try{const el=document.querySelector(sel);if(el&&!el.disabled)el.focus({preventScroll:true});}catch(e){}
+  try{const el=document.querySelector(sel);if(el&&!el.disabled&&el.tagName!=='SELECT'&&!(el.tagName==='INPUT'&&/search|text/.test(el.type)))el.focus({preventScroll:true});}catch(e){}
 }
 function a11y(root){
   (root||document).querySelectorAll('[data-act="player"]:not(button),[data-act="clubview"]:not(button)').forEach(el=>{if(!el.hasAttribute('tabindex')){el.tabIndex=0;el.setAttribute('role','button');}});

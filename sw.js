@@ -1,5 +1,5 @@
 /* Gaffer — service worker: abre sin conexión. Súbele la versión V en cada publicación (debe coincidir con ?v= de index.html). */
-const V='4.35';
+const V='4.36';
 const CACHE='gaffer-'+V,FONTS='gaffer-fonts';
 const SHELL=['./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
 

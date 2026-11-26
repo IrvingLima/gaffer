@@ -219,6 +219,8 @@ document.addEventListener('click',e=>{
   if(a==='optexact'){S.opt=S.opt||{};S.opt.exact=!S.opt.exact;save();render();return;}
   if(a==='start'){const nm=($('#mgr')||{}).value||UI.setup.mgr||'';S.mres=[];beginCareer(UI.setup.idx,nm.trim()||'Mánager',{diff:UI.setup.diff||'normal'},()=>{UI.tab='home';UI.menu=false;render();toast('¡Empieza tu carrera!');});return;}
   if(a==='docreate'){const cr=UI.setup.create,nm=($('#mgr')||{}).value||UI.setup.mgr||'';const cid=createClub(UI.setup.cc,{...cr});S.mres=[];beginCareer(cid,nm.trim()||'Mánager',{diff:UI.setup.diff||'normal'},()=>{UI.tab='home';UI.menu=false;render();toast('Club creado. ¡A empezar desde abajo!');});return;}
+  if(a==='mclose'){closeModal();return;}
+  if(a==='confirmyes'){const f=UI.ask;UI.ask=null;UI.m=null;$('#modalRoot').innerHTML='';if(f)f();render();return;}
   if(!S)return;
   /* --- tiempo --- */
   if(a==='cont'){afterAdvance(advance(S.user==null?'week':'match'));return;}
@@ -228,8 +230,6 @@ document.addEventListener('click',e=>{
   if(a==='playkey'){startMatchUI({key:true});return;}
   if(a==='simmatch'){const pk=S.pend&&S.pend.kind==='tn',comp=pk?(S.pend.nm+' · '+S.pend.rn):null;const M=simulateUserMatch();S.mres.push({Y:userYear(),t:S.t,h:M.hid,a:M.aid,hg:M.hg,ag:M.ag,comp,pen:M.pen||null});save();toast(`Resultado: ${S.clubs[M.hid].short} ${M.hg}-${M.ag} ${S.clubs[M.aid].short}`);render();return;}
   /* --- modales genéricos --- */
-  if(a==='mclose'){closeModal();return;}
-  if(a==='confirmyes'){const f=UI.ask;UI.ask=null;UI.m=null;$('#modalRoot').innerHTML='';if(f)f();render();return;}
   if(a==='inbox'){openModal({type:'inbox'});return;}
   if(a==='mspeed'){UI.ms.speed=+v;document.querySelectorAll('#mSpeed .btn').forEach(b=>b.classList.toggle('on',+b.dataset.v===UI.ms.speed));if(!UI.ms.paused&&!UI.ms.done)startTimer();return;}
   if(a==='mskip'){clearInterval(UI.mt);UI.ms.paused=false;const M=UI.ms.M;if(!UI.ms.ht&&M.m<45){runMinutes(M,45);UI.ms.ht=true;M.ev.slice(-0).forEach(()=>{});$('#mFeed').innerHTML=M.ev.slice().reverse().map(evLine).join('');$('#mScore').textContent=`${M.hg}-${M.ag}`;$('#mMin').textContent="Min 45'";pauseHT();return;}
