@@ -5,39 +5,57 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Gaffer — Modo Carrera</title>
 <meta name="description" content="Modo carrera de fútbol: dirige un club, ojea talento en 47 países, desarrolla tu cantera y salta de club en club.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#080c0b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gaffer">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=4.27">
+<link rel="stylesheet" href="css/style.css?v=4.28">
 </head>
 <body>
 <div id="app"></div>
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 <div id="modalRoot"></div>
-<script src="js/data.js?v=4.27"></script>
-<script src="js/data2.js?v=4.27"></script>
-<script src="js/data3.js?v=4.27"></script>
-<script src="js/core.js?v=4.27"></script>
-<script src="js/names.js?v=4.27"></script>
-<script src="js/flags.js?v=4.27"></script>
-<script src="js/roles.js?v=4.27"></script>
-<script src="js/sim.js?v=4.27"></script>
-<script src="js/world.js?v=4.27"></script>
-<script src="js/tourn.js?v=4.27"></script>
-<script src="js/season.js?v=4.27"></script>
-<script src="js/user1.js?v=4.27"></script>
-<script src="js/user2.js?v=4.27"></script>
-<script src="js/user3.js?v=4.27"></script>
-<script src="js/manager.js?v=4.27"></script>
-<script src="js/events.js?v=4.27"></script>
-<script src="js/game.js?v=4.27"></script>
-<script src="js/ui-base.js?v=4.27"></script>
-<script src="js/ui-views.js?v=4.27"></script>
-<script src="js/ui-market.js?v=4.27"></script>
-<script src="js/ui-decide.js?v=4.27"></script>
-<script src="js/ui-map.js?v=4.27"></script>
-<script src="js/ui-neg.js?v=4.27"></script>
-<script src="js/ui-actions.js?v=4.27"></script>
-<script src="js/ui-match.js?v=4.27"></script>
+<script src="js/data.js?v=4.28"></script>
+<script src="js/data2.js?v=4.28"></script>
+<script src="js/data3.js?v=4.28"></script>
+<script src="js/core.js?v=4.28"></script>
+<script src="js/names.js?v=4.28"></script>
+<script src="js/flags.js?v=4.28"></script>
+<script src="js/roles.js?v=4.28"></script>
+<script src="js/sim.js?v=4.28"></script>
+<script src="js/world.js?v=4.28"></script>
+<script src="js/tourn.js?v=4.28"></script>
+<script src="js/season.js?v=4.28"></script>
+<script src="js/user1.js?v=4.28"></script>
+<script src="js/user2.js?v=4.28"></script>
+<script src="js/user3.js?v=4.28"></script>
+<script src="js/manager.js?v=4.28"></script>
+<script src="js/events.js?v=4.28"></script>
+<script src="js/game.js?v=4.28"></script>
+<script src="js/ui-base.js?v=4.28"></script>
+<script src="js/ui-views.js?v=4.28"></script>
+<script src="js/ui-market.js?v=4.28"></script>
+<script src="js/ui-decide.js?v=4.28"></script>
+<script src="js/ui-map.js?v=4.28"></script>
+<script src="js/ui-neg.js?v=4.28"></script>
+<script src="js/ui-actions.js?v=4.28"></script>
+<script src="js/ui-match.js?v=4.28"></script>
+<script>
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      reg.addEventListener('updatefound',()=>{const nw=reg.installing;if(!nw)return;
+        nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller&&typeof toast==='function')toast('Hay una versión nueva: recarga la página para actualizar.');});});
+    }).catch(()=>{});
+  });
+}
+</script>
 </body>
 </html>

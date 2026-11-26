@@ -1,6 +1,6 @@
 # Gaffer — Modo Carrera (v4.24)
 
-Abre **`index.html`** con doble clic en cualquier navegador (también en móvil). Se guarda solo en tu dispositivo (IndexedDB), funciona sin conexión y no tiene anuncios ni pagos. Hay **6 ranuras de carrera** para jugar partidas simultáneas.
+Abre **`index.html`** con doble clic en cualquier navegador (también en móvil). Se guarda solo en tu dispositivo (IndexedDB), **se instala como app (PWA) y abre sin conexión** (tras la primera visita) y no tiene anuncios ni pagos. Hay **6 ranuras de carrera** para jugar partidas simultáneas.
 
 ## Qué incluye
 - **20 países, 80 divisiones, 1.388 clubes y ~35.000 jugadores.** Europa (España, Inglaterra, Alemania, Italia, Francia, Portugal, Rusia, Países Bajos, Turquía, Bélgica, Escocia, Austria, Suiza, Dinamarca, Polonia, Grecia) y América con temporada de año natural (Brasil, Argentina, México, EE. UU.). Cada país tiene 4 divisiones, copa nacional, ventanas de fichajes de fechas reales y, los europeos, plazas continentales.
@@ -19,7 +19,7 @@ Abre **`index.html`** con doble clic en cualquier navegador (también en móvil)
 - **Create-a-Club** con filosofía (cantera / fichajes / equilibrada) que cambia objetivos y presupuesto, y rival histórico (derbi).
 
 ## Estructura
-`index.html` · `css/style.css` · `js/`: datos (`data`, `data2`, `data3`, `names`), motor (`core`, `roles`, `sim`, `world`, `tourn`, `season`, `user1-3`, `manager`, `game`) e interfaz (`flags`, `ui-base`, `ui-views`, `ui-market`, `ui-map`, `ui-decide`, `ui-neg`, `ui-actions`, `ui-match`) · `playtest/` (rondas de pruebas CANTERA) · `v2_backup/`, `v3_backup_js/`.
+`index.html` · `sw.js` y `manifest.webmanifest` (app instalable; al publicar, sube `V` en `sw.js` a la misma versión que `?v=` de `index.html`) · `icons/` · `css/style.css` · `js/`: datos (`data`, `data2`, `data3`, `names`), motor (`core`, `roles`, `sim`, `world`, `tourn`, `season`, `user1-3`, `manager`, `game`) e interfaz (`flags`, `ui-base`, `ui-views`, `ui-market`, `ui-map`, `ui-decide`, `ui-neg`, `ui-actions`, `ui-match`) · `playtest/` (rondas de pruebas CANTERA) · `v2_backup/`, `v3_backup_js/`.
 
 ## Pruebas (manual del agente playtester)
 `node playtest/cantera.js ronda-N [fast|soak|pt24|all]` ejecuta los escenarios PT-xx con semillas reproducibles y `node playtest/informe.js ronda-N` genera el paquete de entrega. Los usuarios son **simulados**: sirven para detectar fallos, no sustituyen a jugadores reales.
