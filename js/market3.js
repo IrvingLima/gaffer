@@ -11,11 +11,13 @@ function clubWants(c,p,cnt){
   const q=clubQ(c);if(p.ovr<q-9||p.ovr>q+9)return false;
   if(p.age>=34&&p.ovr<q+2)return false;
   if(Math.max(300,wageOf(p))>Math.max(2000,c.wageCap*0.14))return false;
-  if(cnt[p.pos]<POS_MIN[p.pos])return true;
-  /* con la posición cubierta solo ficha a quien mejora a un titular: así no llena la plantilla de relleno */
+  const fit=c.players.reduce((n,i)=>{const x=S.players[i];return n+(x&&x.pos===p.pos&&!(x.inj>2)?1:0);},0);
+  if(cnt[p.pos]<POS_MIN[p.pos]||fit<POS_MIN[p.pos]-1)return true;
+  /* fuera de la ventana solo se cubren huecos; dentro, solo se ficha a quien mejora claramente a un titular */
+  if(!winOpen(c.cc,S.t))return false;
   const mine=c.players.map(i=>S.players[i]).filter(x=>x&&x.pos===p.pos).sort((a,b)=>b.ovr-a.ovr);
   const ref=mine[Math.min(mine.length-1,p.pos==='GK'?0:p.pos==='FWD'?1:3)];
-  return !ref||p.ovr>ref.ovr||(c.players.length<23&&p.age<=21&&p.pot>ref.ovr+4);
+  return !ref||p.ovr>ref.ovr+1||(c.players.length<23&&p.age<=21&&p.pot>ref.ovr+6);
 }
 /* aviso si el que se va a otro club era de tu interés */
 function warnLostTarget(p,c){
@@ -79,7 +81,8 @@ function offseasonMarket(sum,filter){
   const moved=new Set();let good=goodFree(),fromFree=0;
   clubs.forEach(c=>{
     trimSquad(c);
-    const tries=c.tier===1?(c.rep>=70?3:2):1;
+    const lead=c.tier===1&&S.leagues[c.lg]&&S.leagues[c.lg].ids.every(i=>S.clubs[i].skill<=c.skill);
+    const tries=lead?1:c.tier===1?2:1;
     for(let n=0;n<tries;n++){
       if(c.players.length>=SQUAD_TOP||Math.random()<(c.tier===1?0.2:0.5))continue;
       const cnt=posCount(c);

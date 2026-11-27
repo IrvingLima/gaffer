@@ -81,7 +81,8 @@ function endSeason(){
     if(p.where==='retired')return;
     const b=p.ovr;p.age++;
     const mine=p.club===S.user||p.where==='acad'||p.where==='loan';
-    if(p.age<=23){p.ovr=Math.min(p.pot,p.ovr+(mine?ri(0,1):ri(0,3)));}
+    /* en clubes se progresa semana a semana; al cerrar la temporada el salto es el mismo para todos */
+    if(p.age<=23){p.ovr=Math.min(p.pot,p.ovr+(p.club!=null&&p.where==='first'?0:mine?ri(0,1):ri(0,2)));}
     else if(p.age<=29){p.ovr=clamp(p.ovr+ri(-1,1),38,Math.max(p.pot,p.ovr)+1);}
     else if(p.age<=32)p.ovr=Math.max(38,p.ovr-ri(0,2));
     else p.ovr=Math.max(38,p.ovr-ri(1,3));
@@ -248,7 +249,7 @@ function createClub(cc,cfg){
   // reemplaza la identidad del club más débil de 2ª división del país elegido
   const lg=S.leagues.find(l=>l.cc===cc&&l.tier===4);
   const c=lg.ids.map(id=>S.clubs[id]).sort((a,b)=>a.skill-b.skill)[0];
-  c.city=cfg.city;c.suf=cfg.suf;c.name=cfg.city+' '+cfg.suf;c.c1=cfg.c1;c.c2=cfg.c2;c.pat=cfg.pat;c.sh=cfg.sh||0;c.stad=cfg.stad||('Estadio '+cfg.city);
+  c.city=cfg.city;c.suf=cfg.suf;c.name=cfg.city+' '+cfg.suf;c.c1=cfg.c1;c.c2=cfg.c2;c.pat=cfg.pat;c.sh=cfg.sh||0;c.em=cfg.em;c.stad=cfg.stad||('Estadio '+cfg.city);
   const seen={};lg.ids.forEach(id=>{if(id!==c.id)seen[S.clubs[id].short]=1;});c.short=shortFor(c.city,c.suf,seen);if(cfg.short&&cfg.short.length>=2){c.short=cfg.short;c.shortCustom=true;}c.custom=true;c.phil=cfg.phil||'balance';
   c.rival=pick(lg.ids.filter(id=>id!==c.id));
   return c.id;

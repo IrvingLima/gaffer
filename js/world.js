@@ -158,6 +158,7 @@ function applyResult(lg,M){
   const {hid,aid,hg,ag}=M,th=lg.tab[hid],ta=lg.tab[aid];
   th.p++;ta.p++;th.gf+=hg;th.ga+=ag;ta.gf+=ag;ta.ga+=hg;
   if(hg>ag){th.w++;ta.l++;th.pts+=3;}else if(hg<ag){ta.w++;th.l++;ta.pts+=3;}else{th.d++;ta.d++;th.pts++;ta.pts++;}
+  [[hid,hg,ag],[aid,ag,hg]].forEach(([id,my,op])=>{const c=S.clubs[id];c.form5=(c.form5||[]).concat(my>op?'W':my<op?'L':'D').slice(-6);});
   M.goals.forEach(g=>{const p=S.players[g.pid];if(p)p.g++;});
   [[M.H,hid],[M.A,aid]].forEach(([L,cid])=>{
     const c=S.clubs[cid],ids=new Set(L.xi.map(x=>x.p.id)),isU=cid===S.user;
@@ -188,7 +189,6 @@ function commitUserMatch(M){
   applyResult(lg,M);recordStats(M);lg.rd++;S.pend=null;
   const my=M.hid===S.user?M.hg:M.ag,op=M.hid===S.user?M.ag:M.hg,c=userClub();
   challengeResult(M);
-  c.form5=(c.form5||[]);c.form5.push(my>op?'W':my<op?'L':'D');c.form5=c.form5.slice(-6);
   if(my>op){c.rep=Math.min(95,c.rep+0.8);c.board=clamp(c.board+1.5,0,100);}
   else if(my<op){c.rep=Math.max(5,c.rep-0.4);c.board=clamp(c.board-2,0,100);}
   c.board=Math.round(c.board*10)/10;
@@ -261,6 +261,7 @@ function weeklyTick(){
     trackOvr();checkPromises();loanOptionWeek();trainingWeek();moraleWeek();academyWeek();youthRound();scoutWeek();eventsWeek();contractsWeek();loanWeek();
     boardWeek();challengeWeek();preseasonOffer();sponsorPickOffer();callupWeek();ntOfferWeek();ntWeek();
   }
+  aiWeek();
   mgrWeek();
   S.lastWeekly=S.t;
 }

@@ -181,7 +181,7 @@ function endMatchUI(){
   $('#mScore').textContent=`${M.hg}-${M.ag}`;$('#mMin').textContent='Final';$('#mBar').style.width='100%';
   $('#mPanel').innerHTML=`<div class="panel" style="margin-top:12px"><div class="hd"><h2>Resumen</h2></div><div class="${sum.my>sum.op?'good':sum.my<sum.op?'bad':''}" style="font-weight:600;margin-bottom:8px">${esc(sum.why)}</div>
    <div class="stats3">${row('Posesión',pos+'%',(100-pos)+'%')}${row('xG',M.hx.toFixed(2),M.ax.toFixed(2))}${row('Tiros',M.hs,M.as)}${row('A puerta',M.hsot,M.asot)}</div>${keyHTML(M)}</div>`;
-  document.querySelectorAll('#mSpeed,#mKey,#mHT,#mSkip,.matchctl .chk').forEach(x=>x.style.display='none');
+  document.querySelectorAll('.mplay,.mjump,.mopts').forEach(x=>x.style.display='none');
   $('#mClose').disabled=false;$('#mClose').focus({preventScroll:true});save();
 }
 /* ================= eventos ================= */

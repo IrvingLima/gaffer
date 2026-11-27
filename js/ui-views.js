@@ -48,13 +48,13 @@ function renderSetup(){
     const L=LG_BY_CC[U.cc],lg=S.leagues.find(l=>l.cc===U.cc&&l.tier===U.tier),clubs=lg.ids.map(id=>S.clubs[id]).sort((a,b)=>b.skill-a.skill);
     h+=`<div style="margin-top:20px"><button class="btn sm ghost" data-act="backsetup">${ic('back')} Ligas</button></div>
     <div class="tag" style="font-size:clamp(38px,7vw,64px)">${L.nm}<br><i>${lg.nm}</i></div>
-    <div class="seg" role="group" aria-label="División" style="margin-top:8px">${L.t.map((T,i)=>`<button class="${U.tier===i+1?'on':''}" data-act="tier" data-v="${i+1}">${T[0]} (${T[1]})</button>`).join('')}</div>
+    <div class="seg tiers" role="group" aria-label="División" style="margin-top:8px">${L.t.map((T,i)=>`<button class="${U.tier===i+1?'on':''}" data-act="tier" data-v="${i+1}">${T[0]} (${T[1]})</button>`).join('')}</div>
     <div class="lbl" style="margin-top:20px">Elige club · presupuesto según su nivel</div><div class="clist">
     ${clubs.map((c,i)=>`<button class="crow" data-act="club" data-v="${c.id}" aria-pressed="${U.idx===c.id}">${crest(c,44)}<span class="nm"><b>${esc(c.name)}</b><span class="sub">${esc(c.city)} · ${c.stad} · ${c.cap.toLocaleString('es')} plazas · Presupuesto ${EUR(c.budget*DIFFS[U.diff||'normal'].budget)}</span></span><span class="stars" aria-label="Nivel ${starsFor(c.skill)}">${starsFor(c.skill+[0,8,18,26][U.tier-1])}</span></button>`).join('')}</div>
     ${diffPicker(U)}
     <div class="row" style="margin-top:22px"><label class="sr" for="mgr">Tu nombre</label><input id="mgr" type="text" maxlength="24" placeholder="Tu nombre de mánager" value="${esc(U.mgr)}"><button class="btn pri lg" data-act="start" ${U.idx<0?'disabled':''}>Empezar carrera ${ic('arrow')}</button></div>`;
   }else if(U.step==='create'){
-    const cr=U.create,fake={name:(cr.city||'Ciudad')+' '+(cr.suf||'Club'),short:cr.short&&cr.short.length>=2?cr.short:strip((cr.city||'CIU').slice(0,2)+(cr.suf||'C')[0]).toUpperCase(),c1:cr.c1,c2:cr.c2,pat:cr.pat,sh:cr.sh||0};
+    const cr=U.create,fake={name:(cr.city||'Ciudad')+' '+(cr.suf||'Club'),short:cr.short&&cr.short.length>=2?cr.short:strip((cr.city||'CIU').slice(0,2)+(cr.suf||'C')[0]).toUpperCase(),c1:cr.c1,c2:cr.c2,pat:cr.pat,sh:cr.sh||0,em:cr.em,custom:true,suf:cr.suf,city:cr.city};
     const sw=['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'];
     h+=`<div style="margin-top:20px"><button class="btn sm ghost" data-act="backsetup">${ic('back')} Ligas</button></div><div class="tag" style="font-size:clamp(38px,7vw,64px)">Crea tu<br><i>club</i></div>
     <div class="grid g2" style="align-items:start"><div class="panel"><div class="field"><label for="cc_city">Ciudad</label><input id="cc_city" type="text" maxlength="22" value="${esc(cr.city)}" placeholder="Ej. Sevilla"></div>
@@ -66,7 +66,7 @@ function renderSetup(){
     <div class="panel"><div class="row spread"><span class="lbl">Vista previa</span></div><div class="row" style="justify-content:center;margin:10px 0">${crest(fake,96)}</div><div style="text-align:center;font-family:var(--display);font-size:26px;text-transform:uppercase;font-weight:800">${esc(fake.name)}</div>
     <div class="field"><label>Color principal</label><div class="row" style="gap:8px">${sw.map(x=>`<button class="swatch ${cr.c1===x?'on':''}" style="background:${x}" data-act="cc1" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div>
     <div class="field"><label>Color secundario</label><div class="row" style="gap:8px">${sw.map(x=>`<button class="swatch ${cr.c2===x?'on':''}" style="background:${x}" data-act="cc2" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div>
-    <div class="field"><label>Escudo</label><div class="row" style="gap:8px;flex-wrap:wrap">${PAT_LIST.map(p=>`<button class="btn sm ${cr.pat===p?'on':''}" data-act="cpat" data-v="${p}" aria-label="Diseño ${p+1}">${crest({...fake,pat:p},34)}</button>`).join('')}</div><div class="lbl" style="margin:10px 0 6px">Forma</div><div class="row" style="gap:8px;flex-wrap:wrap">${CREST_SHAPES.map((_,i)=>`<button class="btn sm ${(cr.sh||0)===i?'on':''}" data-act="csh" data-v="${i}" aria-label="Forma ${i+1}">${crest({...fake,sh:i},34)}</button>`).join('')}</div></div></div></div>
+    <div class="field"><label>Escudo</label><div class="row" style="gap:8px;flex-wrap:wrap">${PAT_LIST.map(p=>`<button class="btn sm ${cr.pat===p?'on':''}" data-act="cpat" data-v="${p}" aria-label="Diseño ${p+1}">${crest({...fake,pat:p},34)}</button>`).join('')}</div><div class="lbl" style="margin:10px 0 6px">Forma</div><div class="row" style="gap:8px;flex-wrap:wrap">${CREST_SHAPES.map((_,i)=>`<button class="btn sm ${(cr.sh||0)===i?'on':''}" data-act="csh" data-v="${i}" aria-label="Forma ${i+1}">${crest({...fake,sh:i},34)}</button>`).join('')}</div>${emblemPicker(fake,'cem')}<div></div></div></div></div>
     <p class="sub">Tu club entra en la 2ª división del país elegido, sustituyendo al más débil. Empezarás desde abajo.</p>
     <div class="row"><input id="mgr" type="text" maxlength="24" placeholder="Tu nombre de mánager" value="${esc(U.mgr)}"><button class="btn pri lg" data-act="docreate" ${cr.city&&cr.suf?'':'disabled'}>Crear y empezar ${ic('arrow')}</button></div>`;
   }
@@ -118,9 +118,20 @@ function oppReport(oppId){
   const f=v=>noise?`${Math.round(v-noise)}–${Math.round(v+noise)}`:Math.round(v);
   return {l1:`Ataque ${f(r.att)} · Medio ${f(r.mid)} · Defensa ${f(r.def)}`,l2:`${o.form} · ${o.tactic==='attack'?'ofensivo':o.tactic==='defense'?'defensivo':'equilibrado'}${noise?'':' · fiable (analista)'}`,top:top.p};
 }
+/* en qué punto de la temporada estás */
+function seasonBannerHTML(){
+  const c=userClub(),lg=leagueOf(c.id),d=dateOf(S.t),F=lg.sched[0],L=lg.sched[lg.sched.length-1],w=winInfo(c.cc,S.t),nm=nextUserMatch();
+  const long=d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+  const prog=F&&L?clamp((S.t-F.t)/Math.max(1,L.t-F.t)*100,0,100):0;
+  const stage=!F||S.t<F.t?'Pretemporada':lg.rd>=lg.sched.length?'Liga terminada':`Jornada ${Math.min(lg.rd+1,lg.sched.length)} de ${lg.sched.length}`;
+  const next=S.pend?'Hoy hay partido':nm?(nm.t<=S.t?'Hoy hay partido':`Próximo partido en ${nm.t-S.t} día${nm.t-S.t===1?'':'s'}`):'Sin partidos a la vista';
+  return `<section class="season" aria-label="Fecha de la temporada"><div class="sdate"><b>${d.getUTCDate()}</b><span>${d.toLocaleDateString('es',{month:'short',timeZone:'UTC'}).replace('.','')}</span></div>
+    <div class="grow" style="min-width:0"><div class="slong">${long.charAt(0).toUpperCase()+long.slice(1)}</div><div class="sub">Temporada ${userSeasonLabel()} · <b>${stage}</b></div>
+    <div class="wbar" style="margin:6px 0 4px" title="Avance de la liga"><i style="width:${prog}%"></i></div><div class="sub">${next} · ${w.open?`mercado abierto (${w.left} días)`:'mercado cerrado'}</div></div></section>`;
+}
 function vHome(){
   const c=userClub();if(!c)return vCareer();
-  let h='';const lg=leagueOf(c.id),nm=nextUserMatch(),allPending=S.inbox.filter(m=>!m.done&&DECISIONS.includes(m.ty)).sort((a,b)=>((a.exp||1e9)-(b.exp||1e9))||((a.soft?1:0)-(b.soft?1:0))),pending=allPending.slice(0,4);
+  let h=seasonBannerHTML();const lg=leagueOf(c.id),nm=nextUserMatch(),allPending=S.inbox.filter(m=>!m.done&&DECISIONS.includes(m.ty)).sort((a,b)=>((a.exp||1e9)-(b.exp||1e9))||((a.soft?1:0)-(b.soft?1:0))),pending=allPending.slice(0,4);
   if(nm||S.pend){
     const m=S.pend?{h:S.pend.h,a:S.pend.a,t:S.pend.t,rd:lg.rd+1,label:(S.pend.nm?S.pend.nm+' · '+S.pend.rn:lg.nm+' · J'+(lg.rd+1))}:nm,home=m.h===c.id,opp=S.clubs[home?m.a:m.h],rep=oppReport(opp.id);
     const L=lineup(c.id),r=ratings(c.id,L,home),orr=ratings(opp.id,lineup(opp.id),!home),edge=(r.att+r.mid+r.def)/3-(orr.att+orr.mid+orr.def)/3;
@@ -339,7 +350,7 @@ function vClub(){
     h+=`<div class="panel"><div class="hd"><h2>Identidad del club</h2><span class="sub">Edítala cuando quieras</span></div><div class="grid g2" style="align-items:start"><div><div class="field"><label for="id_suf">Nombre</label><input id="id_suf" type="text" maxlength="18" value="${esc(c.suf)}"></div><div class="field"><label for="id_short">Iniciales (salen en el escudo, 2 a 4)</label><input id="id_short" type="text" maxlength="4" autocomplete="off" autocapitalize="characters" value="${esc(c.short)}"></div><div class="field"><label for="id_stad">Estadio</label><input id="id_stad" type="text" maxlength="26" value="${esc(c.stad)}"></div>
     <div class="field"><label>Color principal</label><div class="row" style="gap:8px">${['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'].map(x=>`<button class="swatch ${c.c1===x?'on':''}" style="background:${x}" data-act="idc1" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div>
     <div class="field"><label>Color secundario</label><div class="row" style="gap:8px">${['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'].map(x=>`<button class="swatch ${c.c2===x?'on':''}" style="background:${x}" data-act="idc2" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div></div>
-    <div><div class="row" style="justify-content:center;margin:6px 0">${crest(c,110)}</div><div class="field"><label>Escudo</label><div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap">${PAT_LIST.map(p=>`<button class="btn sm ${c.pat===p?'on':''}" data-act="idpat" data-v="${p}" aria-label="Diseño ${p+1}">${crest({...c,pat:p},30)}</button>`).join('')}</div><div class="lbl" style="margin:10px 0 6px">Forma</div><div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center">${CREST_SHAPES.map((_,i)=>`<button class="btn sm ${(c.sh||0)===i?'on':''}" data-act="idsh" data-v="${i}" aria-label="Forma ${i+1}">${crest({...c,sh:i},30)}</button>`).join('')}</div></div></div></div></div>`;
+    <div><div class="row" style="justify-content:center;margin:6px 0">${crest(c,110)}</div><div class="field"><label>Escudo</label><div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap">${PAT_LIST.map(p=>`<button class="btn sm ${c.pat===p?'on':''}" data-act="idpat" data-v="${p}" aria-label="Diseño ${p+1}">${crest({...c,pat:p,lookCustom:true,sh:c.lookCustom?c.sh:undefined},30)}</button>`).join('')}</div><div class="lbl" style="margin:10px 0 6px">Forma</div><div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center">${CREST_SHAPES.map((_,i)=>`<button class="btn sm ${(c.sh||0)===i?'on':''}" data-act="idsh" data-v="${i}" aria-label="Forma ${i+1}">${crest({...c,sh:i,lookCustom:true},30)}</button>`).join('')}</div>${emblemPicker(c,'idem')}<div></div></div></div></div></div>`;
   }
   return h;
 }

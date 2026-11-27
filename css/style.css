@@ -454,3 +454,31 @@ select{padding-right:8px}input[type=range]{width:100%;accent-color:var(--acc);he
 .screp{border-bottom:1px solid var(--line);padding:4px 0}.screp>summary{display:flex;gap:8px;align-items:center;cursor:pointer;padding:10px 0;min-height:44px}.screp.new>summary b{color:var(--acc)}.screp .mcards{margin-bottom:10px}
 .scard{min-width:0;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--s1);cursor:pointer}
 .modal .box.settings .setseg{flex-wrap:wrap}
+/* ---- símbolos del escudo ---- */
+.empick{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;max-height:190px;overflow:auto;padding:2px}.empick .btn{min-height:44px;padding:0;display:grid;place-items:center}
+/* ---- fecha de la temporada ---- */
+.season{display:flex;gap:14px;align-items:center;padding:12px 14px;margin:6px 0 12px;border:1px solid var(--line2);border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 16%,var(--s1)),var(--s1))}
+.sdate{flex:none;display:grid;place-items:center;width:62px;height:66px;border-radius:12px;background:var(--acc);color:var(--acc-ink);line-height:1}.sdate b{font-family:var(--display);font-size:34px}.sdate span{font-size:12px;font-weight:700;text-transform:uppercase;margin-top:-8px}.slong{font-weight:700;font-size:15px}
+/* ---- partido: todo en una pantalla ---- */
+.modal .box.mbox{display:flex;flex-direction:column;overflow:hidden;padding:0;height:min(94vh,860px);height:min(94dvh,860px);max-height:none}
+.mtop{flex:none;padding:10px 14px 0}.mcomp{text-align:center;margin-bottom:2px}.mbox .score{margin:0}.mbox .score .tm{font-size:13px;gap:3px;min-width:0}.mbox .score .tm span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mcenter{display:grid;justify-items:center}.mbox .score .res{font-size:46px}.mmin{font-size:12px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.6px}
+.mbox .timeline{margin:6px 0}.mbox .timeline s{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--line2)}
+.mbox .mtabs{display:flex;width:100%;margin:4px 0 6px}.mbox .mtabs button{flex:1;min-height:36px;padding:0 4px}
+.mbody{flex:1;min-height:0;overflow:auto;padding:0 14px 8px;overscroll-behavior:contain}
+#mt-live:not([hidden]){display:flex;flex-direction:column;height:100%;min-height:300px}#mPanel:not(:empty)+#mt-live{height:auto}
+.mbox .shotmap{width:100%;flex:none;max-height:min(30vh,300px)}.mbox .pulse{flex:none;margin:6px 0}.mbox .feed{flex:1;min-height:90px;max-height:none;margin:0}
+.mbox .matchctl{flex:none;display:grid;gap:8px;margin:0;padding:8px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line2);background:var(--s2)}
+.mplay{display:flex;gap:10px;align-items:center}.mbig{flex:none;width:54px;height:46px;border-radius:14px;border:0;background:var(--acc);color:var(--acc-ink);font-size:20px;cursor:pointer}
+.mbox .speed{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.mbox .speed .btn{min-height:46px;padding:0}
+.mjump{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mjump .btn{min-height:42px}
+.mopts{display:flex;gap:8px}.mchip{flex:1;display:flex;gap:6px;align-items:center;justify-content:center;min-height:36px;padding:0 8px;border-radius:999px;border:1px solid var(--line2);background:var(--s1);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.mchip.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 24%,var(--s1))}
+.mbox #mClose{min-height:48px;width:100%}.mbox #mClose:disabled{display:none}
+@media(max-width:699px){.modal.mmatch{padding:0}.modal .box.mbox{height:100vh;height:100dvh;border-radius:0;max-height:none}.mtop{padding-top:calc(8px + env(safe-area-inset-top))}}
+@media(min-width:900px) and (orientation:landscape){.mbox .matchctl{grid-template-columns:1.3fr 1fr 1.2fr;align-items:center}.mbox #mClose{grid-column:1/-1}}
+@media(max-height:680px){.mbox .score .tm svg{width:28px;height:31px}.mbox .score .res{font-size:36px}.mbox .shotmap{max-height:24vh}.mjump .btn,.mbox .speed .btn{min-height:38px}.mbig{height:38px}}
+.mbox .matchctl{grid-template-columns:minmax(0,1fr);justify-content:stretch;align-items:stretch}.mbox .matchctl>*{min-width:0}@media(min-width:900px) and (orientation:landscape){.mbox .matchctl{grid-template-columns:1.3fr 1fr 1.4fr;align-items:center}}
+.mbox #mPanel .seg{display:flex;width:100%}.mbox #mPanel .seg button{flex:1;padding:0 4px}.mbox #mPanel select{flex:1 1 100%;width:100%}.mbox #mPanel [data-act="htsub"]{width:100%;min-height:44px}.mbox #mPanel [data-act="htgo"]{width:100%;min-height:48px}.mbox #mPanel .row:last-child{position:sticky;bottom:0;background:var(--s1);padding-top:6px}.mbox #mPanel:not(:empty)+#mt-live{display:none}
+/* ---- en pantallas estrechas ningún selector se corta ---- */
+@media(max-width:699px){.seg{flex-wrap:wrap}.seg>button{flex:1 1 auto}.seg.tiers{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:1px;background:var(--line2)}.seg.tiers>button{background:var(--s2);border:0;white-space:normal;line-height:1.2;padding:6px 8px;min-height:48px}.seg.tiers>button.on{background:var(--acc)}}

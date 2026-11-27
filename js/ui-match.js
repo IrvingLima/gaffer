@@ -34,17 +34,23 @@ function drawMatch(){
   const ms=UI.ms,M=ms.M,hc=M.tc?M.tc.h:S.clubs[M.hid],ac=M.tc?M.tc.a:S.clubs[M.aid];
   let pauseHTpref=true;try{pauseHTpref=localStorage.getItem('gaffer.htpause')!=='0';}catch(e){}
   ms.pauseHT=pauseHTpref;
-  $('#modalRoot').innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="Partido"><div class="box wide">
-   <div class="score"><div class="tm">${crest(hc,48)}<span>${esc(hc.name)}</span></div><div class="res" id="mScore" aria-live="polite">0-0</div><div class="tm">${crest(ac,48)}<span>${esc(ac.name)}</span></div></div>
-   <div class="lbl" style="text-align:center;margin-bottom:4px">${esc(M.nt?'Selecciones · '+M.ntFix.label:M.youth?'Liga juvenil':S.pend&&S.pend.nm?S.pend.nm+' · '+S.pend.rn:leagueOf(S.user).nm)}${(userClub().rival===M.hid||userClub().rival===M.aid)?' · DERBI':''}</div>
-   <div class="row spread"><span class="lbl" id="mMin">Min 0'</span><div class="speed" id="mSpeed">${[0.5,1,2,4].map(v=>`<button class="btn xs ${ms.speed===v?'on':''}" data-act="mspeed" data-v="${v}">${v}×</button>`).join('')}<button class="btn xs" id="mPause" data-act="mpause" aria-label="Pausar">⏸</button></div></div>
-   <div class="timeline"><i id="mBar" style="width:0"></i></div>
-   <div class="seg mtabs" role="tablist" aria-label="Vista del partido">${[['live','En directo'],['stats','Estadísticas'],['players','Jugadores']].map(([k,l])=>`<button role="tab" class="${(ms.tab||'live')===k?'on':''}" data-act="mtab" data-v="${k}">${l}</button>`).join('')}</div>
-   <div id="mt-live" ${(ms.tab||'live')==='live'?'':'hidden'}>${shotPitchSVG()}${pulseHTML()}
-   <div class="feed" id="mFeed" tabindex="0" aria-label="Cronología" style="margin-top:10px"></div></div><div id="mt-extra" ${(ms.tab||'live')==='live'?'hidden':''}></div><div id="mPanel"></div>
-   <div class="matchctl"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn ${M.keyOn?'on':''}" id="mKey" data-act="mkeytoggle" title="Juegas solo las ocasiones de más peso">Momentos clave: ${M.keyOn?'ON':'OFF'}</button><button class="btn" id="mHT" data-act="mtoht">Hasta el descanso</button><button class="btn" id="mSkip" data-act="mskip">Simular hasta el final</button></div>
-   <label class="chk"><input type="checkbox" id="mHTpref" ${pauseHTpref?'checked':''}> Parar en el descanso para cambios</label>
-   <button class="btn pri" id="mClose" data-act="mend" disabled>Continuar</button></div></div></div>`;
+  const tm=c=>`<div class="tm">${crest(c,38)}<span>${esc(c.name)}</span></div>`;
+  $('#modalRoot').innerHTML=`<div class="modal mmatch" role="dialog" aria-modal="true" aria-label="Partido"><div class="box wide mbox">
+   <header class="mtop"><div class="lbl mcomp">${esc(M.nt?'Selecciones · '+M.ntFix.label:M.youth?'Liga juvenil':S.pend&&S.pend.nm?S.pend.nm+' · '+S.pend.rn:leagueOf(S.user).nm)}${(userClub().rival===M.hid||userClub().rival===M.aid)?' · DERBI':''}</div>
+     <div class="score">${tm(hc)}<div class="mcenter"><div class="res" id="mScore" aria-live="polite">0-0</div><span class="mmin" id="mMin">Min 0'</span></div>${tm(ac)}</div>
+     <div class="timeline"><i id="mBar" style="width:0"></i><s></s></div>
+     <div class="seg mtabs" role="tablist" aria-label="Vista del partido">${[['live','En directo'],['stats','Estadísticas'],['players','Jugadores']].map(([k,l])=>`<button role="tab" class="${(ms.tab||'live')===k?'on':''}" data-act="mtab" data-v="${k}">${l}</button>`).join('')}</div></header>
+   <div class="mbody" id="mBody"><div id="mPanel"></div>
+     <div id="mt-live" ${(ms.tab||'live')==='live'?'':'hidden'}>${shotPitchSVG()}${pulseHTML()}<div class="feed" id="mFeed" tabindex="0" aria-label="Cronología"></div></div><div id="mt-extra" ${(ms.tab||'live')==='live'?'hidden':''}></div></div>
+   <footer class="matchctl">
+     <div class="mplay"><button class="mbig" id="mPause" data-act="mpause" aria-label="Pausar o reanudar">${ms.paused?'▶':'⏸'}</button>
+       <div class="speed" id="mSpeed" role="group" aria-label="Velocidad">${[0.5,1,2,4].map(v=>`<button class="btn ${ms.speed===v?'on':''}" data-act="mspeed" data-v="${v}">${v}×</button>`).join('')}</div></div>
+     <div class="mjump"><button class="btn" id="mHT" data-act="mtoht">${ic('clock','sm')} Al descanso</button><button class="btn" id="mSkip" data-act="mskip">${ic('arrow','sm')} Al final</button></div>
+     <div class="mopts"><button class="mchip ${M.keyOn?'on':''}" id="mKey" data-act="mkeytoggle" aria-pressed="${!!M.keyOn}" title="Juegas solo las ocasiones de más peso">${ic('star','sm')} Momentos clave</button>
+       <label class="chk mchip"><input type="checkbox" id="mHTpref" ${pauseHTpref?'checked':''}> Pausa al descanso</label></div>
+     <button class="btn pri" id="mClose" data-act="mend" disabled>Continuar</button></footer></div></div>`;
+  /* cuando aparece un aviso (descanso, momento clave, resumen), se muestra arriba */
+  const panel=$('#mPanel');if(panel&&typeof MutationObserver!=='undefined')new MutationObserver(()=>{if(panel.innerHTML){const body=$('#mBody');if(body)body.scrollTop=0;}}).observe(panel,{childList:true});
   refreshAll();
 }
 function refreshAll(){
@@ -117,5 +123,17 @@ document.addEventListener('click',e=>{
   const b=e.target.closest&&e.target.closest('[data-act]');if(!b||!UI.ms||!UI.m||UI.m.type!=='match')return;const a=b.dataset.act;
   if(a==='mkey'){const ms=UI.ms,M=ms.M,before=M.ev.length;resolveKey(M,b.dataset.v);for(let i=before;i<M.ev.length;i++){feedAdd(M.ev[i]);addShot(M.ev[i]);if(M.ev[i].t==='goal'){const s=$('#p2d');if(s){s.classList.add('goal');setTimeout(()=>s.classList.remove('goal'),900);}}}
     $('#mScore').textContent=`${M.hg}-${M.ag}`;updatePulse();$('#mPanel').innerHTML='';ms.paused=false;const pb=$('#mPause');if(pb)pb.textContent='⏸';startTimer();e.stopImmediatePropagation();e.preventDefault();return;}
-  if(a==='mkeytoggle'){const ms=UI.ms,M=ms.M;M.keyOn=!M.keyOn;b.textContent='Momentos clave: '+(M.keyOn?'ON':'OFF');b.classList.toggle('on',M.keyOn);if(M.keyOn){ms.speed=4;document.querySelectorAll('#mSpeed .btn[data-v]').forEach(x=>x.classList.toggle('on',+x.dataset.v===4));if(!ms.done&&!ms.paused)startTimer();}e.stopImmediatePropagation();e.preventDefault();return;}
+  if(a==='mkeytoggle'){const ms=UI.ms,M=ms.M;M.keyOn=!M.keyOn;b.classList.toggle('on',M.keyOn);b.setAttribute('aria-pressed',M.keyOn);if(M.keyOn){ms.speed=4;document.querySelectorAll('#mSpeed .btn[data-v]').forEach(x=>x.classList.toggle('on',+x.dataset.v===4));if(!ms.done&&!ms.paused)startTimer();}e.stopImmediatePropagation();e.preventDefault();return;}
 },true);
+/* en el descanso solo se ofrecen recambios de la misma línea que el que sale */
+function fillSubs(){
+  const ms=UI.ms,out=$('#ht_out'),inn=$('#ht_in');if(!ms||!out||!inn)return;
+  const L=ms.side==='h'?ms.M.H:ms.M.A,x=L.xi.find(q=>q.p.id===+out.value);if(!x)return;
+  const line=lineOf(x.spos),list=L.bench.filter(p=>p.pos===line).map(p=>({p,pen:posPen(p,x.spos)})).sort((a,b)=>a.pen-b.pen||b.p.ovr-a.p.ovr);
+  inn.innerHTML=list.map(({p})=>`<option value="${p.id}">Entra: ${esc(sname(p))} (${p.sp?SPL[p.sp]:POSL[p.pos]} ${p.ovr})</option>`).join('')||`<option value="">No hay ${LINE_NAME[line]} en el banquillo</option>`;
+  const b=document.querySelector('[data-act="htsub"]');if(b)b.disabled=!list.length||ms.M.subs[ms.side]>=3;
+}
+const _renderHT=renderHT;
+renderHT=function(){_renderHT();fillSubs();const p=$('#mPause');if(p)p.textContent='▶';};
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='ht_out')fillSubs();});
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-act="htgo"]')){const p=document.getElementById('mPause');if(p)p.textContent='⏸';}},true);

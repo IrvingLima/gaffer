@@ -172,28 +172,46 @@ function graduates(sum){
     }});
 }
 /* ---- entrenamiento del primer equipo con feedback semanal ---- */
+/* ritmo común de progresión: calibrado para que el nivel del mundo se mantenga estable temporada tras temporada */
+let GROW_K=0.22;
+/* progresión semanal de un jugador de primer equipo: la misma regla para tu club y para los rivales */
+function growPro(p,o){
+  if(p.age>29)return false;
+  let up=false;
+  const played=S.t-p.lp<=10?1:0.55;
+  const mult=GROW_K*(1+o.tech*0.02)*rateOf(p)*o.focus*played*(p.plan!=null?1.5:1)*(p.pos==='GK'?(1+o.gk*0.015):1);
+  if(p.age<=24){
+    if(tickDev(p,mult*1.2))up=true;
+  }else if(p.ovr<p.pot&&Math.random()<(0.02+(p.pot-p.ovr)*0.004)*mult){p.ovr++;up=true;}
+  // potencial dinámico: sube si juega y rinde, baja si se estanca o se lesiona mucho
+  if(p.age>=18&&p.age<=24&&p.where==='first'){
+    const idle=p.lp>0?S.t-p.lp>42:S.t>dayOf(S.Y,7,1)+126;
+    if(idle&&p.pot>=p.ovr+4&&Math.random()<0.02){p.pot--;if(o.user)p._why=`Lleva semanas sin jugar: su techo baja (de ${p.pot+1} a ${p.pot}). Dale minutos o cédelo.`;}
+    else if(p.inj>=8&&p.pot>p.ovr+2&&Math.random()<0.12){p.pot--;if(o.user)p._why='Una lesión larga frena su proyección: baja su techo.';}
+    else if(p.age<=23&&p.ap>=12&&S.t-p.lp<=10&&p.pot<96&&p.pot<p.ovr+14&&Math.random()<0.015*GROW_K){p.pot++;if(o.user)p._why=`Es habitual en el once y rinde (${p.ap} partidos): sube su techo.`;}
+  }
+  if(p.age<=21&&p.known!==false){
+    if(p.lp>=S.t-14&&p.g>=3&&Math.random()<0.02*GROW_K&&p.pot<96){p.pot++;if(o.user)p._why=`Su techo sube: juega a menudo y rinde (${p.g} goles esta temporada).`;}
+  }
+  return up;
+}
+/* semana de entrenamiento y vestuario de todos los clubes que no diriges */
+function aiWeek(){
+  S.clubs.forEach(c=>{
+    if(c.id===S.user)return;
+    const ab=aiAb(c);
+    c.players.forEach(id=>{const p=S.players[id];if(!p)return;
+      if(growPro(p,{tech:ab,gk:ab,focus:0.8})&&p.age>24){const i=ri(0,5);p.a[i]=clamp(p.a[i]+1,18,98);}
+    });
+    moraleClub(c,false);
+  });
+}
 function trainingWeek(){
   const c=userClub(),tech=staffAbSafe('tech'),notes=[];
   const grp={att:['FWD'],mid:['MID'],def:['DEF','GK'],bal:['FWD','MID','DEF','GK'],fit:[]}[c.train||'bal'];
   const up=[],idle=[],rep={t:S.t,ups:[],idle:[]};
   c.players.map(i=>S.players[i]).forEach(p=>{
-    if(p.age>29)return;
-    const focus=grp.includes(p.pos)?(c.train==='bal'?0.8:1.5):0.5;
-    const played=S.t-p.lp<=10?1:0.55;
-    const mult=(1+tech*0.02)*rateOf(p)*focus*played*(p.plan!=null?1.5:1)*(p.pos==='GK'?(1+staffAbSafe('gk')*0.015):1);
-    if(p.age<=24){
-      if(tickDev(p,mult*1.2))up.push(p);
-    }else if(p.ovr<p.pot&&Math.random()<(0.02+(p.pot-p.ovr)*0.004)*mult){p.ovr++;up.push(p);}
-    // potencial dinámico en el primer equipo: sube si juega y rinde, baja si se estanca o se lesiona mucho
-    if(p.age>=18&&p.age<=24&&p.where==='first'){
-      const idle=p.lp>0?S.t-p.lp>42:S.t>dayOf(S.Y,7,1)+126;
-      if(idle&&p.pot>=p.ovr+4&&Math.random()<0.02){p.pot--;p._why=`Lleva semanas sin jugar: su techo baja (de ${p.pot+1} a ${p.pot}). Dale minutos o cédelo.`;}
-      else if(p.inj>=8&&p.pot>p.ovr+2&&Math.random()<0.12){p.pot--;p._why='Una lesión larga frena su proyección: baja su techo.';}
-      else if(p.age<=23&&p.ap>=12&&S.t-p.lp<=10&&p.pot<96&&p.pot<p.ovr+14&&Math.random()<0.015){p.pot++;p._why=`Es habitual en el once y rinde (${p.ap} partidos): sube su techo.`;}
-    }
-    if(p.age<=21&&p.known!==false){
-      if(p.lp>=S.t-14&&p.g>=3&&Math.random()<0.02&&p.pot<96){p.pot++;p._why=`Su techo sube: juega a menudo y rinde (${p.g} goles esta temporada).`;}
-    }
+    if(growPro(p,{tech,gk:staffAbSafe('gk'),focus:grp.includes(p.pos)?(c.train==='bal'?0.8:1.5):0.5,user:true}))up.push(p);
   });
   up.forEach(p=>{const L=p.pos==='GK'?ATTL.gk:ATTL.out,idx=({att:[0,1,3],mid:[2,3],def:[4,5],bal:[0,1,2,3,4,5],fit:[5]}[c.train||'bal']||[0,1,2,3,4,5]),ix=p.plan!=null?p.plan:(p.pos==='GK'?ri(0,5):pick(idx));p.a[ix]=clamp(p.a[ix]+1,18,98);
     const pl=S.t-p.lp<=10;rep.ups.push({pid:p.id,txt:`${p.name}: +1 en ${L[ix]} (${pl?'está jugando':'entrenamiento'}${c.train&&c.train!=='bal'?', foco '+({att:'ataque',mid:'medio',def:'defensa',fit:'físico'})[c.train]:''})`});});

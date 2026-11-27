@@ -58,11 +58,11 @@ function sponsorBonusEnd(uc,sum){
 /* ---------- 8. Gestión internacional (ligera): convocatorias de tus jugadores ---------- */
 const INTL=[[9,1,9,12],[10,6,10,14],[11,10,11,18],[3,18,3,26],[6,1,6,10]];
 const inIntl=t=>{const d=dateOf(t),m=d.getUTCMonth()+1,dd=d.getUTCDate();return INTL.some(([a,b,c,e])=>m===a&&dd>=b&&dd<=e);};
-function callupWeek(){
-  const c=userClub();if(!c||!inIntl(S.t)||S.callK===Math.floor(S.t/20))return;S.callK=Math.floor(S.t/20);
+/* convocatorias de un club: ausencia, riesgo de lesión y posible mejora; la misma regla para todos */
+function callClub(c){
   const out=[];
   c.players.map(i=>S.players[i]).forEach(p=>{
-    if(p.inj||p.away)return;const nt=NAT[p.nat];if(!nt)return;
+    if(!p||p.inj||(p.away&&p.away>=S.t))return;const nt=NAT[p.nat];if(!nt)return;
     const cut=60+(nt.yq-1)*18;if(p.ovr<cut||Math.random()>0.55)return;
     p.away=S.t+9;p.intl=(p.intl||0)+1;
     const risk=Math.random()<0.04*(traitOf(p)==='Frágil'?1.6:1);
@@ -70,6 +70,12 @@ function callupWeek(){
     else{if(p.age<=24&&p.ovr<p.pot&&Math.random()<0.3){p.ovr++;out.push(`${p.name} (${p.nat}) crece con la selección: +1 de nivel.`);}else out.push(`${p.name} es convocado por ${nt.nm}: se pierde esta jornada.`);}
     p.mv=Math.min(1.15,(p.mv||1)*1.03);
   });
+  return out;
+}
+function callupWeek(){
+  const c=userClub();if(!c||!inIntl(S.t)||S.callK===Math.floor(S.t/20))return;S.callK=Math.floor(S.t/20);
+  const out=callClub(c);
+  S.clubs.forEach(x=>{if(x.id!==c.id)callClub(x);});
   out.slice(0,5).forEach(t=>news(t,'g'));
   if(S.callY!==userYear()){S.callY=userYear();S.callN=0;}
   if(out.length&&S.callN<2){S.callN++;inbox({ty:'info',title:'Parón de selecciones',body:`${out.length} de tus jugadores han sido convocados. Estarán fuera esta semana; una convocatoria puede beneficiar (crecimiento, valor) o complicar (lesión) a tu plantilla.`});}

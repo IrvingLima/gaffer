@@ -71,10 +71,15 @@ function lineupMainHTML(c,L){
    <details class="mapfold"><summary class="sub">Sistema sin balón (avanzado)</summary><div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn sm ${!c.formOut?'on':''}" data-act="formout" data-v="">Igual</button>${Object.keys(FORMS).map(f=>`<button class="btn sm ${c.formOut===f?'on':''}" data-act="formout" data-v="${f}">${f}</button>`).join('')}</div><p class="sub">Más defensas sin balón suben tu defensa y bajan tu ataque.</p></details>`;
 }
 document.addEventListener('toggle',e=>{if(e.target&&e.target.classList&&e.target.classList.contains('formfold'))UI.formOpen=e.target.open;},true);
+/* línea a la que pertenece una posición concreta (un carrilero es defensa; un extremo, delantero) */
+const lineOf=sp=>SPG[sp];
+const LINE_NAME={GK:'porteros',DEF:'defensas',MID:'medios',FWD:'delanteros'};
 function mSlotPick(i){
   const c=userClub(),L=lineup(c.id),fk=c.form,sp=FSLOTS[fk][i],cur=L.xi[i],grp=cur.slot;
-  const cands=c.players.map(i2=>S.players[i2]).filter(p=>!p.inj&&((grp==='GK')===(p.pos==='GK'))).map(p=>({p,pen:posPen(p,sp),s:eff(p)-posPen(p,sp)+psBonus(p,grp)})).sort((a,b)=>b.s-a.s).slice(0,16);
-  return modalShell(`Elegir ${SPN[sp]}`,`<p class="sub" style="margin-top:0">Hueco <b>${SPL[sp]}</b> en el ${fk}. Ahora: <b>${esc(cur.p.name)}</b>. Entre paréntesis, su nivel real jugando ahí.</p>
+  const all=c.players.map(i2=>S.players[i2]).filter(p=>!p.inj&&((grp==='GK')===(p.pos==='GK'))).map(p=>({p,pen:posPen(p,sp),s:eff(p)-posPen(p,sp)+psBonus(p,grp)})).sort((a,b)=>b.s-a.s);
+  /* solo la línea del puesto: delanteros para la delantera, medios para el medio, defensas para la defensa */
+  const line=lineOf(sp),cands=all.filter(x=>x.p.pos===line||x.p.id===cur.p.id),others=cands.filter(x=>x.p.id!==cur.p.id).length;
+  return modalShell(`Elegir ${SPN[sp]}`,`<p class="sub" style="margin-top:0">Hueco <b>${SPL[sp]}</b> en el ${fk}. Ahora: <b>${esc(cur.p.name)}</b>. Entre paréntesis, su nivel real jugando ahí.</p><p class="sub">${others?`Solo aparecen tus ${LINE_NAME[line]}.`:`No tienes más ${LINE_NAME[line]} disponibles (revisa lesionados o ficha uno).`}</p>
    <div class="pickl">${cands.map(({p,pen,s})=>`<div class="pickrow ${p.id===cur.p.id?'cur':''}"><div class="row nw" style="gap:8px;min-width:0;flex:1">${posTag(p.pos,p)}<div style="min-width:0"><b class="ellip">${esc(p.name)}</b><div class="sub">${natChip(pen)} · cond. ${Math.round(p.fit)}%${p.age<=21&&p.pot-p.ovr>=8?' · <span class="good">crece jugando</span>':''}</div></div></div>${ovrChip(p)}<span class="sub" title="Nivel efectivo en este hueco">(${Math.round(s)})</span>
      <button class="btn xs ${p.id===cur.p.id?'':'pri'}" data-act="fixslot" data-i="${i}" data-id="${p.id}">${p.id===cur.p.id?'Fijar':'Poner'}</button></div>`).join('')}</div>
    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="btn ghost" data-act="autoslot" data-i="${i}">Que decida el entrenador</button><button class="btn" data-act="mclose">Cerrar</button></div>`,'narrow');

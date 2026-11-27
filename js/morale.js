@@ -1,26 +1,26 @@
 "use strict";
 /* ================= moral por jugador y plan de entrenamiento individual (propuestas a validar) ================= */
 const MAX_PLANS=5;
-function moraleWeek(){
-  const c=userClub();if(!c)return;
-  const L=lineup(c.id),starters=new Set(L.xi.map(x=>x.p.id)),pl=c.players.map(i=>S.players[i]).filter(Boolean);
+function moraleWeek(){const c=userClub();if(c)moraleClub(c,true);}
+/* mismas reglas para todas las plantillas: cuenta quien ha jugado hace poco */
+function moraleClub(c,mine){
+  const pl=c.players.map(i=>S.players[i]).filter(Boolean);if(!pl.length)return;
   const sorted=pl.slice().sort((a,b)=>b.ovr-a.ovr),cut=sorted[Math.floor(sorted.length*0.5)]?sorted[Math.floor(sorted.length*0.5)].ovr:50;
   const form=(c.form5||[]).slice(-3),res=form.reduce((s,x)=>s+(x==='W'?1:x==='L'?-1:0),0);
+  const mo=dateOf(S.t).getUTCMonth()+1;
   pl.forEach(p=>{
     if(p.mo==null)p.mo=70;
     let d=0;const why=[];
     const played=p.lp>0&&S.t-p.lp<=10;
-    if(starters.has(p.id)&&played){d+=1.4;why.push(['up','Es titular y juega']);}
+    if(played){d+=1.4;why.push(['up','Es titular y juega']);}
     else if(!played&&p.ovr>=cut&&!p.inj){d-=2.2;why.push(['dn','Merece jugar más y no lo hace']);}
     else if(!played&&p.age<=21){d-=0.8;why.push(['dn','Quiere minutos para crecer']);}
     if(res>0){d+=0.5*res;why.push(['up','Buenos resultados del equipo']);}else if(res<0){d+=0.5*res;why.push(['dn','Malos resultados del equipo']);}
-    const fair=wageOf(p);
-    if(p.ovr>=65&&p.w<fair*0.75){d-=1;why.push(['dn','Cobra menos de lo que vale']);}
-    if(p.ce<=S.Y&&dateOf(S.t).getUTCMonth()+1>=3&&dateOf(S.t).getUTCMonth()+1<=6){d-=0.6;why.push(['dn','Su contrato termina en junio']);}
-    if(p.nb){/* sin efecto */}
+    if(p.ovr>=65&&p.w<wageOf(p)*0.75){d-=1;why.push(['dn','Cobra menos de lo que vale']);}
+    if(p.ce<=S.Y&&mo>=3&&mo<=6){d-=0.6;why.push(['dn','Su contrato termina en junio']);}
     d+=(70-p.mo)*0.05;
     p.mo=clamp(Math.round((p.mo+d)*10)/10,0,100);
-    p.mr=why.slice(0,3);
+    if(mine)p.mr=why.slice(0,3);
   });
 }
 const moraleFactor=p=>p.mo==null?1:1+0.0006*(p.mo-70);
