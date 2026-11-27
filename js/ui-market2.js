@@ -58,11 +58,11 @@ function marketCard(p,free){
   const reach=reachOf(p),lgn=cl?`${LG_BY_CC[cl.cc].nm} · ${S.leagues[cl.lg].tier}ª div.`:'',s=seen(p);
   const pot=s.e2===0?p.pot:midPot(p),ovr=midOvr(p);
   const rcls=reach===3?'ok':reach===0?'no':'mid',rtxt=reach===3?'Alcanzable':reach===2?'Salario ✗':reach===1?'Caro':'Fuera de alcance';
-  const chips=[free?'<span class="chip info">Agente libre</span>':p.ce<=S.Y?'<span class="chip warn">Acaba contrato</span>':'',p.age<=21&&pot-ovr>=10?'<span class="chip gold">Perla</span>':'',(p.ps||[]).slice(0,1).map(k=>s.k>=40&&PLAYSTYLES[k]?`<span class="chip ps">${PLAYSTYLES[k].nm}</span>`:'').join('')].join('');
+  const chips=[cmpBadge(p),free?'<span class="chip info">Agente libre</span>':p.ce<=S.Y?'<span class="chip warn">Acaba contrato</span>':'',p.age<=21&&pot-ovr>=10?'<span class="chip gold">Perla</span>':'',(p.ps||[]).slice(0,1).map(k=>s.k>=40&&PLAYSTYLES[k]?`<span class="chip ps">${PLAYSTYLES[k].nm}</span>`:'').join('')].join('');
   return `<article class="mcard ${t}" data-act="player" data-id="${p.id}" tabindex="0">
    <div class="mc-top"><div class="mc-ovr ${t} ${rg?'rg':''}"><b>${showOvr(p)}</b><small>${p.sp?SPL[p.sp]:POSL[p.pos]}</small></div>
     <div class="mc-id"><b class="ellip">${esc(p.name)}${deltaChip(p)}</b><div class="sub">${flag(p.nat,11)} ${NAT[p.nat]?NAT[p.nat].nm:p.nat} · ${p.age} años</div>
-     <div class="mc-club">${cl?crest(cl,18):''}<span class="ellip">${free?'Sin club':esc(clubLabel(p))}</span>${lgn?`<span class="sub"> · ${lgn}</span>`:''}</div></div>
+     <div class="mc-club">${cl?crest(cl,18):''}<span class="ellip">${free?'Sin club':esc(clubLabel(p))}</span>${lgn?`<span class="mc-lg ellip">${lgn}</span>`:''}</div></div>
     <div class="mc-price ${rcls}"><b>${free?'Gratis':EUR(fee)}</b><span>${EUR(estWage(p))}/sem</span></div></div>
    <div class="mc-mid"><div class="mc-pot" title="Nivel ${showOvr(p)} · potencial ${showPot(p)}"><i class="cur" style="width:${clamp(ovr,0,100)}%"></i><i class="pt" style="left:${clamp(pot,0,100)}%"></i></div><span class="sub">pot. ${showPot(p)}</span>${chips}</div>
    <div class="mc-act"><span class="reach ${rcls}">${rtxt}</span><span class="grow"></span>

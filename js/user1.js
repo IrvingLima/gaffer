@@ -123,19 +123,20 @@ function evalOffer(p,o){
   if(dest==='first'&&c.players.length>=27){res.msgs.push('Plantilla completa (27). Vende o libera a alguien.');return res;}
   if(dest==='acad'&&acadFree()<=0){res.msgs.push('La cantera no tiene plazas libres.');return res;}
   const v=valueOf(p),eff=o.fee+(o.sellOn||0)/100*v*0.8+(o.bonus||0)*0.7;
-  if(c.budget<o.fee){res.msgs.push(`No tienes presupuesto para ${EUR(o.fee)} (tienes ${EUR(c.budget)}).`);return res;}
+  if(c.budget<o.fee){res.msgs.push(`No tienes presupuesto para ${EXACT(o.fee)} (tienes ${EXACT(c.budget)}).`);return res;}
   if(!free){
     if(eff>=A.fee*0.999){res.msgs.push('El club vendedor acepta las condiciones.');}
-    else if(eff>=A.fee*0.9){res.counter=Math.max(0,Math.round((A.fee-(o.sellOn||0)/100*v*0.8-(o.bonus||0)*0.7)/1000)*1000);res.msgs.push(`Rechazada, pero cerca: piden ${EUR(res.counter)} con estas cláusulas.`);A.why.forEach(w=>res.msgs.push(w));return res;}
-    else{res.msgs.push(`Oferta insuficiente. Valoran al jugador en torno a ${EUR(A.fee)}.`);A.why.forEach(w=>res.msgs.push(w));return res;}
+    else if(eff>=A.fee*0.9){res.counter=Math.max(0,Math.round((A.fee-(o.sellOn||0)/100*v*0.8-(o.bonus||0)*0.7)/1000)*1000);res.msgs.push(`Rechazada, pero cerca: piden ${EXACT(res.counter)} con estas cláusulas.`);A.why.forEach(w=>res.msgs.push(w));return res;}
+    else{res.msgs.push(`Oferta insuficiente. Valoran al jugador en torno a ${EXACT(A.fee)}.`);A.why.forEach(w=>res.msgs.push(w));return res;}
   }
   const newBill=wageBill(c)+o.wage;
-  if(newBill>wageLimit(c)&&dest==='first'){res.msgs.push(`Supera el límite salarial de la directiva (${EUR(wageLimit(c))}/sem). La masa salarial quedaría en ${EUR(newBill)}.`);return res;}
-  if(o.wage<WA.w*0.97){res.msgs.push(`El jugador pide al menos ${EUR(WA.w)}/sem.`);WA.why.forEach(w=>res.msgs.push(w));return res;}
+  if(newBill>wageLimit(c)&&dest==='first'){res.msgs.push(`Supera el límite salarial de la directiva (${EXACT(wageLimit(c))}/sem). La masa salarial quedaría en ${EXACT(newBill)}.`);return res;}
+  if(o.wage<WA.w*0.97){res.msgs.push(`El jugador pide al menos ${EXACT(WA.w)}/sem.`);WA.why.forEach(w=>res.msgs.push(w));return res;}
   res.ok=true;res.msgs.push(free?'El jugador acepta el contrato.':'¡Trato cerrado!');return res;
 }
+function logMove(k,p,fee,club){S.tlog=S.tlog||[];S.tlog.unshift({t:S.t,k,n:p.name,fee:Math.round(fee||0),club:club||''});if(S.tlog.length>60)S.tlog.length=60;}
 function doSigning(p,o){
-  const wasFree=p.where==='free';
+  const wasFree=p.where==='free';logMove('in',p,(o.fee||0),p.club!=null&&S.clubs[p.club]?S.clubs[p.club].name:'');
   const c=userClub(),pc=p.club!=null?S.clubs[p.club]:null,dest=o.dest==='acad'?'acad':'first';
   const bonus=o.bonus||0;
   if(dest==='acad'){
@@ -170,9 +171,9 @@ function sellPlayer(pid,fee){
   if(p.pos==='GK'&&c.players.filter(i=>S.players[i].pos==='GK').length<=2)return 'Necesitas al menos 2 porteros.';
   c.players=c.players.filter(i=>i!==pid);p.club=null;p.where='free';
   let net=fee;if(p.so){const pay=Math.round(fee*p.so.pct/100);net-=pay;S.clubs[p.so.cid].budget+=pay;news(`Pagas ${EUR(pay)} (${p.so.pct}%) por la cláusula de venta a ${S.clubs[p.so.cid].name}.`,'n');}
-  c.budget+=net;S.ac.list.forEach(i=>{if(S.players[i].mentor===pid)S.players[i].mentor=null;});
+  c.budget+=net;logMove('out',p,net,'');S.ac.list.forEach(i=>{if(S.players[i].mentor===pid)S.players[i].mentor=null;});
   S.free=S.free.filter(i=>i!==pid);
-  return null;
+  cleanMsgs();return null;
 }
 function transferOut(pid,buyerId,fee){
   const err=sellPlayer(pid,fee);if(err)return err;
@@ -191,14 +192,14 @@ function renewPlayer(pid,wage,years){
   const p=S.players[pid],ask=renewAsk(p),c=userClub();
   if(wage<ask*0.97)return `Pide al menos ${EUR(ask)}/sem para renovar.`;
   if(wageBill(c)-p.w+wage>wageLimit(c)*1.04)return 'Supera el límite salarial de la directiva.';
-  p.w=wage;p.ce=Math.max(p.ce,S.Y)+years;p.remind=0;news(`${p.name} renueva hasta ${S.Y+years-1+1}.`,'n');return null;
+  p.w=wage;p.ce=Math.max(p.ce,S.Y)+years;p.remind=0;cleanMsgs();news(`${p.name} renueva hasta ${S.Y+years-1+1}.`,'n');return null;
 }
 function releasePlayer(pid){
   const c=userClub(),p=S.players[pid];if(!p||!c.players.includes(pid))return 'Ese jugador no es tuyo.';
   if(c.players.length<=18)return 'Necesitas al menos 18 jugadores.';
   const cost=p.w*Math.max(8,(p.ce-S.Y+1)*26*0.5);
   if(c.budget<cost)return 'No puedes pagar la indemnización de '+EUR(cost)+'.';
-  c.budget-=cost;c.players=c.players.filter(i=>i!==pid);p.club=null;p.where='free';S.free.push(pid);
+  c.budget-=cost;c.players=c.players.filter(i=>i!==pid);p.club=null;p.where='free';S.free.push(pid);cleanMsgs();
   S.ac.list.forEach(i=>{if(S.players[i].mentor===pid)S.players[i].mentor=null;});return null;
 }
 function releaseCost(p){return p.w*Math.max(8,(p.ce-S.Y+1)*26*0.5);}

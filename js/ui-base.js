@@ -1,6 +1,6 @@
 "use strict";
 /* ================= base de interfaz ================= */
-const UI={tab:'home',sub:{team:'squad',acad:'squad',scout:'map',market:'search',club:'staff',league:'table',career:'profile'},
+const UI={tab:'home',sub:{team:'squad',acad:'squad',scout:'map',market:'hub',club:'staff',league:'table',career:'profile'},
   f:{sq:'ALL',cards:(typeof innerWidth!=='undefined'&&innerWidth<640),mk:{pos:'ALL',nat:'ALL',minOvr:0,maxAge:40,q:'',sort:'ovr',only:'ALL'},rep:{pos:'ALL',maxAge:40},lg:null,wl:null},
   sel:{nat:null},m:null,setup:{step:'country',cc:null,tier:1,idx:0,mgr:'',create:{city:'',suf:'',c1:'#2fbf84',c2:'#f2f2f0',pat:0,stad:''}},mt:null,drawer:{}};
 const ICONS={
@@ -20,13 +20,13 @@ const ic=(n,c)=>`<svg class="ic ${c||''}" viewBox="0 0 24 24" aria-hidden="true"
 let CID=0;
 function crest(c,size){
   size=size||40;const id='cp'+(CID++),t=lum(c.c1)>0.4?'#111':'#fff';
-  const shield='M4 3h32v17c0 10-7 16-16 20C11 36 4 30 4 20z';
-  const pats=[`<rect x="4" y="22" width="32" height="9" fill="${c.c2}"/>`,`<rect x="20" y="0" width="20" height="44" fill="${c.c2}"/>`,
-   `<rect x="4" y="9" width="32" height="6" fill="${c.c2}"/><rect x="4" y="21" width="32" height="6" fill="${c.c2}"/><rect x="4" y="33" width="32" height="6" fill="${c.c2}"/>`,
-   `<path d="M0 8L40 30V40L0 18z" fill="${c.c2}"/>`,`<path d="M4 18L20 8L36 18V26L20 16L4 26z" fill="${c.c2}"/>`];
+  const shield=CREST_SHAPES[(c.sh||0)%CREST_SHAPES.length];
+  const k=(c.pat||0)%NPATS,R=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c.c2}"/>`,body=crestPattern(k,R,c.c2);
+  /* en los diseños partidos las iniciales van sobre una placa para que se lean */
+  const busy=[1,2,5,7,8,9].includes(k),ty=k===0?19:k===10?27:k===4?35:23;
   return `<svg width="${size}" height="${Math.round(size*1.1)}" viewBox="0 0 40 44" role="img" aria-label="Escudo ${esc(c.name)}" style="flex:none"><defs><clipPath id="${id}"><path d="${shield}"/></clipPath></defs>
-   <path d="${shield}" fill="${c.c1}"/><g clip-path="url(#${id})">${pats[c.pat%5]}</g><path d="${shield}" fill="none" stroke="${lum(c.c1)<0.12?'#ffffff55':'#00000055'}" stroke-width="1.4"/>
-   <text x="20" y="${c.pat===0?19:21}" text-anchor="middle" font-family="Big Shoulders Display,Arial Narrow,sans-serif" font-weight="800" font-size="12" letter-spacing=".5" fill="${t}" stroke="${t==='#fff'?'#0006':'#fff6'}" stroke-width=".5" paint-order="stroke">${esc(c.short)}</text></svg>`;
+   <path d="${shield}" fill="${c.c1}"/><g clip-path="url(#${id})">${body}</g><path d="${shield}" fill="none" stroke="${lum(c.c1)<0.12?'#ffffff55':'#00000055'}" stroke-width="1.4"/>${busy?`<rect x="8" y="${ty-11}" width="24" height="14" rx="3" fill="${c.c1}" opacity=".93"/>`:''}
+   <text x="20" y="${ty}" text-anchor="middle" font-family="Big Shoulders Display,Arial Narrow,sans-serif" font-weight="800" font-size="12" letter-spacing=".5" fill="${t}" stroke="${t==='#fff'?'#0006':'#fff6'}" stroke-width=".5" paint-order="stroke">${esc(c.short)}</text></svg>`;
 }
 /* ---- acento del club ---- */
 const isDark=()=>document.documentElement.dataset.theme!=='light';

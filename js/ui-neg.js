@@ -15,7 +15,7 @@ function openOffer(pid){
 function wageMeter(wage,replace){
   const c=userClub(),lim=wageLimit(c),bill=wageBill(c)-(replace||0)+wage,pct=bill/lim,left=lim-bill;
   const cls=pct>1?'bad':pct>0.92?'warn':'good',w=Math.min(100,Math.round(pct*100));
-  return `<div class="wmeter ${cls}"><div class="row spread" style="margin-bottom:4px"><span class="sub">Masa salarial tras el contrato</span><b>${EUR(bill)} / ${EUR(lim)}</b></div><div class="wbar"><i style="width:${w}%"></i><span style="left:${Math.min(100,Math.round(100/Math.max(1.0001,pct>1?pct:1)))}%"></span></div><div class="sub" style="margin-top:4px">${left>=0?`Te quedan <b>${EUR(left)}/sem</b> de margen.`:`Te pasas <b>${EUR(-left)}/sem</b> del límite: la directiva no lo aprobará.`}</div></div>`;
+  return `<div class="wmeter ${cls}"><div class="row spread" style="margin-bottom:4px"><span class="sub">Masa salarial tras el contrato</span><b>${EXACT(bill)} / ${EXACT(lim)}</b></div><div class="wbar"><i style="width:${w}%"></i><span style="left:${Math.min(100,Math.round(100/Math.max(1.0001,pct>1?pct:1)))}%"></span></div><div class="sub" style="margin-top:4px">${left>=0?`Te quedan <b>${EXACT(left)}/sem</b> de margen.`:`Te pasas <b>${EXACT(-left)}/sem</b> del límite: la directiva no lo aprobará.`}</div></div>`;
 }
 /* analista: califica el acuerdo de A a F y explica el riesgo en una línea (su criterio es una propuesta a validar) */
 function dealGrade(p,O){
@@ -47,34 +47,34 @@ function updAnalyst(){const b=document.getElementById('analyst');if(b&&UI.m&&UI.
 /* canje: incluye a un jugador tuyo como parte del pago */
 function swapField(O){
   const c=userClub(),mine=c.players.map(i=>S.players[i]).filter(p=>!p.inj).sort((a,b)=>valueOf(b)-valueOf(a)).slice(0,24);
-  return `<div class="field"><label for="of_swap">Incluir a un jugador tuyo (canje)</label><select id="of_swap"><option value="">Ninguno</option>${mine.map(p=>`<option value="${p.id}" ${O.swap===p.id?'selected':''}>${esc(p.name)} · ${POSL[p.pos]} ${p.ovr} · ${EUR(Math.round(valueOf(p)*0.85/1000)*1000)}</option>`).join('')}</select><div class="sub" style="margin-top:4px">El club vendedor lo valora al 85 % de su precio y se descuenta del traspaso.</div></div>`;
+  return `<div class="field"><label for="of_swap">Incluir a un jugador tuyo (canje)</label><select id="of_swap"><option value="">Ninguno</option>${mine.map(p=>`<option value="${p.id}" ${O.swap===p.id?'selected':''}>${esc(p.name)} · ${POSL[p.pos]} ${p.ovr} · ${EXACT(Math.round(valueOf(p)*0.85/1000)*1000)}</option>`).join('')}</select><div class="sub" style="margin-top:4px">El club vendedor lo valora al 85 % de su precio y se descuenta del traspaso.</div></div>`;
 }
 function mOffer(pid){
   const p=S.players[pid],c=userClub(),n=negGet(pid),O=UI.offer,free=p.where==='free',est=approxValue(p);
   const wEst=Math.max(300,Math.round(wageOf({...p,ovr:midOvr(p),pot:Math.max(midOvr(p),midPot(p))})/100)*100);
   const feeMax=Math.max(Math.round(est*2.2/1e5)*1e5,500000),young=p.age<=18&&acadFree()>0&&n.stage==='club';
   let body=`<div class="row" style="gap:8px;margin-bottom:6px">${posTag(p.pos,p)}<span class="chip">${p.age} años</span><span class="chip">${flag(p.nat,12)} ${NAT[p.nat].nm}</span><span class="chip">Nivel ${showOvr(p)}</span><span class="chip gold">Pot. ${showPot(p)}</span>${confChip(p)}</div>
-  <p class="sub">${free?'Agente libre: solo pagas el salario.':`Club actual: ${esc(clubLabel(p))}. Valor aproximado ${EUR(est)}.`} Presupuesto ${EUR(c.budget)} · límite salarial ${EUR(wageLimit(c))} (masa ${EUR(wageBill(c))}).</p>`;
+  <p class="sub">${free?'Agente libre: solo pagas el salario.':`Club actual: ${esc(clubLabel(p))}. Valor aproximado ${EXACT(est)}.`} Presupuesto ${EXACT(c.budget)} · límite salarial ${EXACT(wageLimit(c))} (masa ${EXACT(wageBill(c))}).</p>`;
   if(n.log.length)body+=`<div class="chat" id="chat">${n.log.slice(-7).map(bub).join('')}</div>`;
   if(n.dead){body+=`<div class="msg bad"><b>Negociación rota</b><div class="sub">Podrás volver a intentarlo el ${fmtD(n.cool)}.</div></div><div class="row" style="justify-content:flex-end"><button class="btn" data-act="mclose">Cerrar</button></div>`;return modalShell((free?'Contrato: ':'Negociación: ')+p.name,body,'narrow');}
   if(n.stage==='club'){
     if(!free&&UI.offer.mode!=='loan'||free)body+='';
     if(!free)body+=`<div class="seg" style="margin:6px 0"><button class="${O.mode!=='loan'?'on':''}" data-act="nmode" data-v="buy">Traspaso</button><button class="${O.mode==='loan'?'on':''}" data-act="nmode" data-v="loan">Cesión con opción</button></div>`;
     if(O.mode==='loan'&&!free){
-      body+=`${slider('of_lfee','Coste de la cesión',10000,Math.max(500000,Math.round(est*0.3/1e4)*1e4),10000,O.lfee,EUR)}${slider('of_opt','Opción de compra (0 = sin opción)',0,Math.round(est*2/1e5)*1e5,100000,O.opt,v=>v?EUR(v):'Sin opción')}
+      body+=`${slider('of_lfee','Coste de la cesión',10000,Math.max(500000,Math.round(est*0.3/1e4)*1e4),10000,O.lfee,EUR)}${slider('of_opt','Opción de compra (0 = sin opción)',0,Math.round(est*2/1e5)*1e5,100000,O.opt,v=>v?EXACT(v):'Sin opción')}
       <div class="seg" style="margin:8px 0"><button class="${!O.obl?'on':''}" data-act="lobl" data-v="0">Opción de compra</button><button class="${O.obl?'on':''}" data-act="lobl" data-v="1">Obligación de compra</button></div>
       <p class="sub">El jugador viene hasta fin de temporada y cobra su salario completo. ${O.obl?'Con <b>obligación</b>, la compra se ejecuta sola al terminar (el club vendedor pide menos por la cesión). Si no puedes pagarla, la directiva se enfada.':'Si hay opción, decides en abril.'}</p>`;
       body+=`<div id="ofres">${O.res?resBox(O.res):''}</div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="mclose">Cancelar</button><button class="btn pri" data-act="loanin">Pedir cesión</button></div>`;
     }else{
-      body+=`${slider('of_fee','Traspaso',0,feeMax,Math.max(50000,Math.round(feeMax/200/1e4)*1e4),O.fee,EUR)}${slider('of_sell','% de futura venta para el vendedor',0,30,5,O.sellOn,v=>v+'%')}${slider('of_bonus','Bono por rendimiento (tras 20 partidos)',0,Math.round(est*0.5/1e5)*1e5,50000,O.bonus,v=>v?EUR(v):'Sin bono')}
+      body+=`${slider('of_fee','Traspaso',0,feeMax,Math.max(50000,Math.round(feeMax/200/1e4)*1e4),O.fee,EUR)}${slider('of_sell','% de futura venta para el vendedor',0,30,5,O.sellOn,v=>v+'%')}${slider('of_bonus','Bono por rendimiento (tras 20 partidos)',0,Math.round(est*0.5/1e5)*1e5,50000,O.bonus,v=>v?EXACT(v):'Sin bono')}
       ${swapField(O)}
       ${young?`<div class="field"><label>Destino</label><div class="seg"><button class="${O.dest!=='acad'?'on':''}" data-act="ofdest" data-v="first">Primer equipo</button><button class="${O.dest==='acad'?'on':''}" data-act="ofdest" data-v="acad">Cantera</button></div></div>`:''}
       <div id="analyst">${analystInner(pid)}</div><div class="sub">Paciencia del club: <b>${dots(n.patience,3)}</b>${n.rival?` · <span class="warn">Rival interesado: ${esc(S.clubs[n.rival].name)}</span>`:''}</div>
       <div id="ofres">${O.res?resBox(O.res):''}</div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="mclose">Retirarse</button><button class="btn pri" data-act="negclub">Hacer oferta</button></div>`;
     }
   }else if(n.stage==='player'){
-    body+=`<div class="msg pending"><b>${n.pre?'Pre-contrato · el agente del jugador':'Fase 2 · el agente del jugador'}</b><div class="sub">${n.pre?'Pre-contrato: llegaría gratis el 1 de julio. ':free?'':`${esc(clubLabel(p))} acepta ${EUR((n.agreed||{}).fee||0)}${(n.agreed&&n.agreed.sellOn)?` con ${n.agreed.sellOn}% de venta futura`:''}. `}Ahora hay que convencer al jugador.</div></div>
-    ${slider('of_wage','Salario semanal',Math.round(wEst*0.5/100)*100,Math.round(wEst*2.4/100)*100,100,O.wage,v=>EUR(v)+'/sem')}${slider('of_years','Duración (años)',1,5,1,O.years,v=>v+(v===1?' año':' años'))}${slider('of_sign','Prima de fichaje (pago único)',0,Math.round(wEst*30/1000)*1000,1000,O.sign,v=>v?EUR(v):'Sin prima')}
+    body+=`<div class="msg pending"><b>${n.pre?'Pre-contrato · el agente del jugador':'Fase 2 · el agente del jugador'}</b><div class="sub">${n.pre?'Pre-contrato: llegaría gratis el 1 de julio. ':free?'':`${esc(clubLabel(p))} acepta ${EXACT((n.agreed||{}).fee||0)}${(n.agreed&&n.agreed.sellOn)?` con ${n.agreed.sellOn}% de venta futura`:''}. `}Ahora hay que convencer al jugador.</div></div>
+    ${slider('of_wage','Salario semanal',Math.round(wEst*0.5/100)*100,Math.round(wEst*2.4/100)*100,100,O.wage,v=>EXACT(v)+'/sem')}${slider('of_years','Duración (años)',1,5,1,O.years,v=>v+(v===1?' año':' años'))}${slider('of_sign','Prima de fichaje (pago único)',0,Math.round(wEst*30/1000)*1000,1000,O.sign,v=>v?EXACT(v):'Sin prima')}
     <div id="wmeter">${wageMeter(O.wage)}</div><div id="analyst">${analystInner(pid)}</div><div class="sub">Paciencia del agente: <b>${dots(n.patience,3)}</b></div><div id="ofres">${O.res?resBox(O.res):''}</div>
     <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="mclose">Retirarse</button><button class="btn pri" data-act="negplayer">Proponer contrato</button></div>`;
   }else body+=`<div class="msg pending"><b>Trato cerrado</b></div><div class="row" style="justify-content:flex-end"><button class="btn pri" data-act="mclose">Cerrar</button></div>`;
@@ -86,10 +86,10 @@ function resBox(r){
 }
 function mCounter(mid){
   const m=S.inbox.find(x=>x.id===mid),p=S.players[m.pid],O=UI.cnt;
-  return modalShell('Contraoferta por '+p.name,`<p class="sub">${esc(S.clubs[m.cid].name)} ofrece ${EUR(m.fee)}. Valor aproximado de ${esc(p.name)}: ${EUR(valueOf(p))}. Si pides demasiado, retirarán la oferta.</p>
+  return modalShell('Contraoferta por '+p.name,`<p class="sub">${esc(S.clubs[m.cid].name)} ofrece ${EXACT(m.fee)}. Valor aproximado de ${esc(p.name)}: ${EXACT(valueOf(p))}. Si pides demasiado, retirarán la oferta.</p>
    ${slider('cn_fee','Tu precio',Math.round(m.fee*0.9/1e4)*1e4,Math.round(valueOf(p)*2.4/1e5)*1e5,50000,O.fee,EUR)}
    ${O.res?`<div class="msg ${O.agreed?'pending':''}"><div class="${O.res.state==='withdrawn'?'bad':O.agreed?'good':''}">${esc(O.res.msg)}</div></div>`:''}
-   <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="mclose">Cerrar</button>${O.agreed?`<button class="btn pri" data-act="cnaccept">Cerrar el trato por ${EUR(O.agreed)}</button>`:O.res&&O.res.state==='withdrawn'?'':`<button class="btn pri" data-act="cnsend">Contraofertar</button>`}</div>`,'narrow');
+   <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="mclose">Cerrar</button>${O.agreed?`<button class="btn pri" data-act="cnaccept">Cerrar el trato por ${EXACT(O.agreed)}</button>`:O.res&&O.res.state==='withdrawn'?'':`<button class="btn pri" data-act="cnsend">Contraofertar</button>`}</div>`,'narrow');
 }
 /* ----- copas en la pestaña Liga ----- */
 function tournSelect(){
@@ -127,7 +127,7 @@ document.addEventListener('click',e=>{
     if(r.state==='accept'){const p=S.players[pid];O.wage=Math.max(O.wage,wageAsk(p).w);O.res=null;}
     if(r.state==='lost'){save();render();}renderModal();const ch=$('#chat');if(ch)ch.scrollTop=ch.scrollHeight;return;}
   if(a==='negcounter'){const pid=UI.m.pid,O=UI.offer,n=negGet(pid),c=(O.res.counters||[])[+v];if(!c)return;
-    if(n.stage==='club'){O.fee=c.fee;O.sellOn=c.sellOn||0;O.bonus=c.bonus||0;const r=negClub(pid,{fee:O.fee,sellOn:O.sellOn,bonus:O.bonus},O.dest);O.res=r;if(r.state==='accept'){O.wage=Math.max(O.wage,wageAsk(S.players[pid]).w);O.res=null;}}
+    if(n.stage==='club'){O.fee=c.fee;O.sellOn=c.sellOn||0;O.bonus=c.bonus||0;const r=negClub(pid,{fee:O.fee,sellOn:O.sellOn,bonus:O.bonus,swap:O.swap==null?null:O.swap},O.dest);O.res=r;if(r.state==='accept'){O.wage=Math.max(O.wage,wageAsk(S.players[pid]).w);O.res=null;}}
     else{O.wage=c.wage;O.sign=c.sign||0;const r=negPlayer(pid,{wage:O.wage,years:O.years,sign:O.sign});O.res=r;if(r.state==='signed'){const nm=S.players[pid].name;save();UI.m=null;$('#modalRoot').innerHTML='';render();toast(`${nm} firma con tu club.`);return;}}
     renderModal();return;}
   if(a==='negplayer'){const pid=UI.m.pid,O=UI.offer,r=negPlayer(pid,{wage:O.wage,years:O.years,sign:O.sign});O.res=r;
@@ -141,10 +141,16 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{
   const t=e.target,id=t.id;if(!id||!S)return;
-  const fm={of_lfee:['lfee',EUR],of_opt:['opt',v=>v?EUR(v):'Sin opción'],of_bonus:['bonus',v=>v?EUR(v):'Sin bono'],of_sign:['sign',v=>v?EUR(v):'Sin prima'],cn_fee:null};
+  const fm={of_lfee:['lfee',EUR],of_opt:['opt',v=>v?EXACT(v):'Sin opción'],of_bonus:['bonus',v=>v?EXACT(v):'Sin bono'],of_sign:['sign',v=>v?EXACT(v):'Sin prima'],cn_fee:null};
   if(fm[id]){const v=+t.value;UI.offer[fm[id][0]]=v;$('#'+id+'v').textContent=fm[id][1](v);updAnalyst();return;}
-  if(id==='cn_fee'){const v=+t.value;UI.cnt.fee=v;$('#cn_feev').textContent=EUR(v);}
+  if(id==='cn_fee'){const v=+t.value;UI.cnt.fee=v;$('#cn_feev').textContent=EXACT(v);}
 });
 document.addEventListener('change',e=>{if(e.target.id==='tnsel'){UI.f.tn=e.target.value;render();}});
 
-document.addEventListener('change',e=>{if(e.target&&e.target.id==='of_swap'&&UI.offer){UI.offer.swap=e.target.value?+e.target.value:null;const sw=UI.offer.swap!=null?S.players[UI.offer.swap]:null;if(sw){const v=Math.round(valueOf(sw)*0.85/1000)*1000;UI.offer.fee=Math.max(0,UI.offer.fee-v);}renderModal();}});
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='of_swap'&&UI.offer){
+  const val=pid=>pid!=null&&S.players[pid]?Math.round(valueOf(S.players[pid])*0.85/1000)*1000:0,prev=val(UI.offer.swap);
+  // «base» es el efectivo sin canje: quitar el jugador devuelve exactamente esa cifra
+  const O=UI.offer,base=O.swap!=null&&O.base!=null&&O.fee===Math.max(0,O.base-prev)?O.base:O.fee+(O.swap!=null?prev:0);
+  O.swap=e.target.value?+e.target.value:null;O.base=base;
+  O.fee=Math.max(0,base-val(O.swap));renderModal();}});
+

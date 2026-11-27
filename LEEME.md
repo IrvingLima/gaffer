@@ -1,4 +1,4 @@
-# Gaffer — Modo Carrera (v4.37)
+# Gaffer — Modo Carrera (v4.46)
 
 Abre **`index.html`** con doble clic en cualquier navegador (también en móvil). Se guarda solo en tu dispositivo (IndexedDB), **se instala como app (PWA) y abre sin conexión** (tras la primera visita) y no tiene anuncios ni pagos. Hay **6 ranuras de carrera** para jugar partidas simultáneas.
 
@@ -19,7 +19,7 @@ Abre **`index.html`** con doble clic en cualquier navegador (también en móvil)
 - **Create-a-Club** con filosofía (cantera / fichajes / equilibrada) que cambia objetivos y presupuesto, y rival histórico (derbi).
 
 ## Estructura
-`index.html` · `sw.js` y `manifest.webmanifest` (app instalable; al publicar, sube `V` en `sw.js` a la misma versión que `?v=` de `index.html`) · `icons/` · `css/style.css` · `js/`: datos (`data`, `data2`, `data3`, `names`), motor (`core`, `roles`, `sim`, `world`, `tourn`, `season`, `user1-3`, `manager`, `game`) e interfaz (`flags`, `ui-base`, `ui-views`, `ui-market`, `ui-map`, `ui-decide`, `ui-neg`, `ui-actions`, `ui-match`) · `playtest/` (rondas de pruebas CANTERA) · `v2_backup/`, `v3_backup_js/`.
+`index.html` · `sw.js` y `manifest.webmanifest` (app instalable; al publicar, sube `V` en `sw.js` a la misma versión que `?v=` de `index.html`) · `icons/` · `css/style.css` · `js/`: datos (`data`, `data2`, `data3`, `names`), motor (`core`, `identity`, `roles`, `sim`, `world`, `tourn`, `season`, `user1-3`, `manager`, `game`) e interfaz (`flags`, `ui-base`, `ui-views`, `ui-market`, `ui-map`, `ui-decide`, `ui-neg`, `ui-actions`, `ui-match`, `ui-stats`, `ui-hub`, `ui-deal`) · `playtest/` (rondas de pruebas CANTERA) · `v2_backup/`, `v3_backup_js/`.
 
 ## Pruebas (manual del agente playtester)
 `node playtest/cantera.js ronda-N [fast|soak|pt24|all]` ejecuta los escenarios PT-xx con semillas reproducibles y `node playtest/informe.js ronda-N` genera el paquete de entrega. Los usuarios son **simulados**: sirven para detectar fallos, no sustituyen a jugadores reales.
@@ -30,3 +30,14 @@ Pendientes: 8 dirigir una selección (calendario y plantilla propios), 12 jugado
 
 ## Novedades v4.37
 Exportar/importar partida a archivo `.gaffer`; potencial dinámico en el primer equipo; cesión con obligación de compra, canjes (tuyos y de la CPU), operaciones preparadas para el Deadline Day, memoria de ofertas y «no escuchar ofertas»; moral por jugador y plan de entrenamiento individual (hasta 5); liga juvenil jugable con el motor; dirigir una selección (2 partidos por parón).
+
+## Novedades v4.45
+- Alineación en móvil: cada posición tiene su altura y banda, etiquetas de color y lista de titulares bajo el campo.
+- Partido: pestañas Estadísticas y Jugadores (con notas); "Simular todo" abre el resumen.
+- Negociación nueva: importes exactos (escribir, botones y barra), pasos Club / Contrato / Firma, paciencia y comparación con tu titular.
+- Mercado: pestaña Centro (balance, negociaciones, ofertas, recomendados, lista corta, acuerdos) y venta en tarjetas.
+- Corregido: la tarea pendiente seguía tras renovar; el canje acumulaba la cifra al cambiar de jugador.
+
+
+## Novedades v4.46
+- Identidad de clubes (`js/identity.js`): 5 formas de escudo originales, 11 patrones, estadios ligados a la zona y sufijos geográficos en categorías inferiores. Sin escudos, símbolos ni marcas reales. Las partidas guardadas se actualizan al cargarlas.

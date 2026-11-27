@@ -5,7 +5,16 @@ const BLOCKING=['offer','jobOffer','deadline','loanopt','preseason','sponsorpick
 const blocks=m=>BLOCKING.includes(m.ty)&&!m.soft;
 const DECISIONS=['ntjob','preseason','sponsorpick','challenge','offer','jobOffer','minutes','interest','deadline','unhappy','contract','sponsor','loanopt'];
 function pendingMsgs(){return S.inbox.filter(m=>!m.done&&DECISIONS.includes(m.ty));}
-function expireMsgs(){S.inbox.forEach(m=>{if(!m.done&&m.exp&&S.t>m.exp){m.done=true;m.expired=true;}});}
+/* cierra las tareas que ya no tienen sentido (renovaste, vendiste o liberaste al jugador) */
+function cleanMsgs(){
+  if(!S||S.user==null)return;
+  S.inbox.forEach(m=>{
+    if(m.done||m.pid==null)return;const p=S.players[m.pid];
+    const gone=!p||p.club!==S.user;
+    if((m.ty==='contract'&&(gone||p.ce>S.Y))||((m.ty==='offer'||m.ty==='minutes'||m.ty==='unhappy')&&gone))m.done=true;
+  });
+}
+function expireMsgs(){cleanMsgs();S.inbox.forEach(m=>{if(!m.done&&m.exp&&S.t>m.exp){m.done=true;m.expired=true;}});}
 /* mode: 'week' avanza hasta 7 días; 'match' hasta el próximo partido o evento importante */
 /* Los países de año natural arrancan en la pretemporada de SU liga: el mundo avanza hasta dos semanas antes */
 function startTarget(cid){const c=S.clubs[cid];if(!c||!calOf(c.cc))return 0;const lg=S.leagues[c.lg];return lg.sched.length?lg.sched[0].t-14:0;}

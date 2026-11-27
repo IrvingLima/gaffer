@@ -179,7 +179,8 @@ function endMatchUI(){
   $('#mScore').textContent=`${M.hg}-${M.ag}`;$('#mMin').textContent='Final';$('#mBar').style.width='100%';
   $('#mPanel').innerHTML=`<div class="panel" style="margin-top:12px"><div class="hd"><h2>Resumen</h2></div><div class="${sum.my>sum.op?'good':sum.my<sum.op?'bad':''}" style="font-weight:600;margin-bottom:8px">${esc(sum.why)}</div>
    <div class="stats3">${row('Posesión',pos+'%',(100-pos)+'%')}${row('xG',M.hx.toFixed(2),M.ax.toFixed(2))}${row('Tiros',M.hs,M.as)}${row('A puerta',M.hsot,M.asot)}</div>${keyHTML(M)}</div>`;
-  $('#mClose').disabled=false;$('#mSkip').disabled=true;$('#mClose').focus();save();
+  document.querySelectorAll('#mSpeed,#mKey,#mHT,#mSkip,.matchctl .chk').forEach(x=>x.style.display='none');
+  $('#mClose').disabled=false;$('#mClose').focus({preventScroll:true});save();
 }
 /* ================= eventos ================= */
 function startSetupDefaults(){UI.setup={step:'country',cc:null,tier:1,idx:-1,mgr:'',create:{city:'',suf:'',c1:'#2fbf84',c2:'#f2f2f0',pat:0,stad:''}};}
@@ -210,7 +211,7 @@ document.addEventListener('click',e=>{
   if(a==='club'){UI.setup.idx=id||+v;render();return;}
   if(a==='backsetup'){UI.setup.step='country';render();return;}
   if(a==='createclub'){UI.setup.step='create';UI.setup.cc=UI.setup.cc||'ES';render();return;}
-  if(a==='cc1'){UI.setup.create.c1=v;render();return;}if(a==='cc2'){UI.setup.create.c2=v;render();return;}if(a==='cpat'){UI.setup.create.pat=+v;render();return;}
+  if(a==='cc1'){UI.setup.create.c1=v;render();return;}if(a==='cc2'){UI.setup.create.c2=v;render();return;}if(a==='cpat'){UI.setup.create.pat=+v;render();return;}if(a==='csh'){UI.setup.create.sh=+v;render();return;}
   if(a==='diff'){UI.setup.diff=v;render();return;}
   if(a==='ddopen'){if(!S.dd||!S.dd.open)ddOpen();openModal({type:'dd'});return;}
   if(a==='ddnext'){ddNext();renderModal();save();return;}
@@ -234,9 +235,9 @@ document.addEventListener('click',e=>{
   if(a==='cont'){afterAdvance(advance(S.user==null?'week':'match'));return;}
   if(a==='week'){afterAdvance(advance('week'));return;}
   if(a==='auto5'){const r=autoplay(5);toast(`Simulados ${r.played} partidos: ${r.w}G ${r.d}E ${r.l}P${r.reason==='msg'?' · hay una decisión pendiente':''}`);afterAdvance(r.reason==='season'?'season':'ok');return;}
+  if(a==='simmatch'){startMatchUI();if(UI.ms){UI.ms.tab='stats';drawMatch();simToEnd();}return;}
   if(a==='play'){startMatchUI();return;}
   if(a==='playkey'){startMatchUI({key:true});return;}
-  if(a==='simmatch'){const pk=S.pend&&S.pend.kind==='tn',comp=pk?(S.pend.nm+' · '+S.pend.rn):null;const M=simulateUserMatch();S.mres.push({Y:userYear(),t:S.t,h:M.hid,a:M.aid,hg:M.hg,ag:M.ag,comp,pen:M.pen||null});save();toast(`Resultado: ${S.clubs[M.hid].short} ${M.hg}-${M.ag} ${S.clubs[M.aid].short}`);render();return;}
   /* --- modales genéricos --- */
   if(a==='inbox'){openModal({type:'inbox'});return;}
   if(a==='mspeed'){UI.ms.speed=+v;document.querySelectorAll('#mSpeed .btn').forEach(b=>b.classList.toggle('on',+b.dataset.v===UI.ms.speed));if(!UI.ms.paused&&!UI.ms.done)startTimer();return;}
@@ -296,7 +297,7 @@ document.addEventListener('click',e=>{
   if(a==='hire'){const s=S.staff.market.find(x=>x.id===id),cur=s.role!=='scout'?S.staff.hired.find(x=>x.role===s.role):null;
     ask(`Contratar a ${s.nm} (${STAFF_ROLES[s.role].nm}, nivel ${s.ab}) por ${EUR(s.w)}/sem. Prima ${EUR(s.w*4)}${cur?`. Sustituye a ${cur.nm} (nivel ${cur.ab}): indemnización ${EUR(cur.w*8)}`:''}.`,()=>{const err=hireStaff(id);if(err)toast(err);else toast('Fichaje de staff completado.');save();},'Contratar');return;}
   if(a==='fire'){const s=S.staff.hired.find(x=>x.id===id);ask(`¿Despedir a ${s.nm}? Indemnización ${EUR(s.w*8)}.`,()=>{fireStaff(id);save();},'Despedir',true);return;}
-  if(a==='idc1'){c.c1=v;save();render();return;}if(a==='idc2'){c.c2=v;save();render();return;}if(a==='idpat'){c.pat=+v;save();render();return;}
+  if(a==='idc1'){c.c1=v;save();render();return;}if(a==='idc2'){c.c2=v;save();render();return;}if(a==='idpat'){c.pat=+v;save();render();return;}if(a==='idsh'){c.sh=+v;save();render();return;}
   if(a==='mentor'){return;}
   /* --- carrera --- */
   if(a==='apply'){const ok=applyFor(id);if(ok)toast('Candidatura enviada.');save();render();return;}

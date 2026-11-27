@@ -25,6 +25,7 @@ function pulseHTML(){
 }
 function updatePulse(){
   const ms=UI.ms,M=ms.M;if(!$('#mPoss'))return;
+  if(typeof renderMatchTab==='function')renderMatchTab();
   const ph=Math.round(M.pw/Math.max(1,M.m)*100);
   $('#mPoss').style.width=ph+'%';$('#mPossH').textContent=ph+'%';$('#mPossA').textContent=(100-ph)+'%';
   $('#mXgH').textContent=`${M.hx.toFixed(2)} · ${M.hs}`;$('#mXgA').textContent=`${M.ax.toFixed(2)} · ${M.as}`;
@@ -38,8 +39,9 @@ function drawMatch(){
    <div class="lbl" style="text-align:center;margin-bottom:4px">${esc(M.nt?'Selecciones · '+M.ntFix.label:M.youth?'Liga juvenil':S.pend&&S.pend.nm?S.pend.nm+' · '+S.pend.rn:leagueOf(S.user).nm)}${(userClub().rival===M.hid||userClub().rival===M.aid)?' · DERBI':''}</div>
    <div class="row spread"><span class="lbl" id="mMin">Min 0'</span><div class="speed" id="mSpeed">${[0.5,1,2,4].map(v=>`<button class="btn xs ${ms.speed===v?'on':''}" data-act="mspeed" data-v="${v}">${v}×</button>`).join('')}<button class="btn xs" id="mPause" data-act="mpause" aria-label="Pausar">⏸</button></div></div>
    <div class="timeline"><i id="mBar" style="width:0"></i></div>
-   ${shotPitchSVG()}${pulseHTML()}
-   <div class="feed" id="mFeed" tabindex="0" aria-label="Cronología" style="margin-top:10px"></div><div id="mPanel"></div>
+   <div class="seg mtabs" role="tablist" aria-label="Vista del partido">${[['live','En directo'],['stats','Estadísticas'],['players','Jugadores']].map(([k,l])=>`<button role="tab" class="${(ms.tab||'live')===k?'on':''}" data-act="mtab" data-v="${k}">${l}</button>`).join('')}</div>
+   <div id="mt-live" ${(ms.tab||'live')==='live'?'':'hidden'}>${shotPitchSVG()}${pulseHTML()}
+   <div class="feed" id="mFeed" tabindex="0" aria-label="Cronología" style="margin-top:10px"></div></div><div id="mt-extra" ${(ms.tab||'live')==='live'?'hidden':''}></div><div id="mPanel"></div>
    <div class="matchctl"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn ${M.keyOn?'on':''}" id="mKey" data-act="mkeytoggle" title="Juegas solo las ocasiones de más peso">Momentos clave: ${M.keyOn?'ON':'OFF'}</button><button class="btn" id="mHT" data-act="mtoht">Hasta el descanso</button><button class="btn" id="mSkip" data-act="mskip">Simular hasta el final</button></div>
    <label class="chk"><input type="checkbox" id="mHTpref" ${pauseHTpref?'checked':''}> Parar en el descanso para cambios</label>
    <button class="btn pri" id="mClose" data-act="mend" disabled>Continuar</button></div></div></div>`;

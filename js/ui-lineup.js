@@ -1,21 +1,41 @@
 "use strict";
 /* ================= alineación pensada para el móvil: toca un hueco, consejos y sistema recomendado ================= */
 const natChip=(pen)=>pen===0?'<span class="chip good">Su posición</span>':pen<=1.2?'<span class="chip info">Posición alternativa</span>':`<span class="chip warn">Fuera de posición −${pen.toFixed(1)}</span>`;
-function pitchInteractive(c,L){
-  const rows=[['GK',130],['DEF',100],['MID',69],['FWD',36]];let dots='';
-  rows.forEach(([pos,y])=>{
-    const xs=L.xi.filter(x=>x.slot===pos).sort((a,b)=>(a.lat||0)-(b.lat||0));
-    xs.forEach((x,i)=>{
-      const cx=(i+1)*100/(xs.length+1),nm=sname(x.p),lab=nm.length>9?nm.slice(0,8)+'.':nm,out=x.pen>0,bad=x.pen>=4;
-      const ring=bad?'#d4161d':out?'#e2b80f':c.c2,rad=xs.length>=5?7:8;
-      dots+=`<g class="slotnode" data-act="slot" data-i="${x.idx}" role="button" tabindex="0" aria-label="${SPL[x.spos]}: ${esc(x.p.name)}, nivel ${x.p.ovr}" transform="translate(${cx.toFixed(1)} ${y})">
-        <circle r="${rad+4}" class="hit"/><circle r="${rad}" fill="${c.c1}" stroke="${ring}" stroke-width="${out?2.2:1.4}"/>
-        <text y="2.6" text-anchor="middle" font-size="7.4" font-weight="800" style="fill:${lum(c.c1)>0.4?'#111':'#fff'}">${x.p.ovr}</text>
-        <text y="${rad+8.5}" text-anchor="middle" font-size="4.7" class="nm">${esc(lab)}</text>
-        <text y="${-rad-3}" text-anchor="middle" font-size="4.1" class="ps${out?' off':''}">${SPL[x.spos]}${x.fixed?' ★':''}</text></g>`;
-    });
+/* cada posición tiene su altura y su banda: el dibujo muestra la forma real del sistema y no se pisan los nombres */
+const SP_Y={GK:135,CB:112,LB:105,RB:105,LWB:88,RWB:88,CDM:89,CM:67,LM:63,RM:63,CAM:45,LW:30,RW:30,CF:38,ST:14};
+const SP_SIDE={LB:11,LWB:11,LM:11,LW:17,RB:89,RWB:89,RM:89,RW:83};
+const GRP_COL={GK:'#c59bff',DEF:'#6aa5ff',MID:'#4fd08a',FWD:'#ff8f5c'};
+function slotXY(xi){
+  const central={};xi.forEach(x=>{if(SP_SIDE[x.spos]===undefined)(central[x.spos]=central[x.spos]||[]).push(x);});
+  const out={};
+  xi.forEach(x=>{
+    let cx=SP_SIDE[x.spos];
+    if(cx===undefined){const g=central[x.spos],i=g.indexOf(x),n=g.length;cx=n===1?50:n===2?[34,66][i]:n===3?[25,50,75][i]:12+i*76/(n-1);}
+    out[x.idx]=[cx,SP_Y[x.spos]||70];
   });
-  return `<svg viewBox="0 0 100 148" class="pitch big" role="group" aria-label="Once titular: toca un hueco para cambiar al jugador"><rect x="3" y="3" width="94" height="142" rx="3" class="pl"/><path d="M3 74h94" class="pl"/><circle cx="50" cy="74" r="11" class="pl"/><rect x="26" y="3" width="48" height="19" class="pl"/><rect x="26" y="126" width="48" height="19" class="pl"/>${dots}</svg>`;
+  return out;
+}
+const shortName=(p,max)=>{const n=sname(p).split(' ')[0];return n.length>max?n.slice(0,max-1)+'…':n;};
+function pitchInteractive(c,L){
+  const xy=slotXY(L.xi),ink=lum(c.c1)>0.4?'#111':'#fff';
+  const nodes=L.xi.map(x=>{
+    const [cx,cy]=xy[x.idx],out=x.pen>0,bad=x.pen>=4,col=out?(bad?'#e5484d':'#f2c200'):GRP_COL[x.slot],nm=shortName(x.p,10);
+    const w=Math.max(12,Math.min(21,nm.length*1.85+3));
+    return `<g class="slotnode" data-act="slot" data-i="${x.idx}" role="button" tabindex="0" aria-label="${SPN[x.spos]}: ${esc(x.p.name)}, nivel ${x.p.ovr}${out?', fuera de su posición':''}" transform="translate(${cx} ${cy})">
+      <rect class="hit" x="-11" y="-10" width="22" height="24" rx="3"/>
+      <circle r="5.4" fill="${c.c1}" stroke="${col}" stroke-width="1.3"/>
+      <text y="1.7" text-anchor="middle" font-size="4.8" font-weight="800" style="fill:${ink}">${x.p.ovr}</text>
+      <rect x="-5.6" y="-10.2" width="11.2" height="4.4" rx="1.4" fill="${col}"/>
+      <text y="-6.9" text-anchor="middle" font-size="3.2" font-weight="800" style="fill:#0b0f0e">${SPL[x.spos]}${x.fixed?'★':''}</text>
+      <rect class="nbg" x="${(-w/2).toFixed(1)}" y="6.4" width="${w.toFixed(1)}" height="5" rx="1.5"/>
+      <text y="10" text-anchor="middle" font-size="3.25" class="nm">${esc(nm)}</text></g>`;
+  }).join('');
+  return `<svg viewBox="0 0 100 148" class="pitch big" role="group" aria-label="Once titular: toca un jugador para cambiarlo"><rect x="1.5" y="1.5" width="97" height="145" rx="3" class="pl"/><path d="M1.5 74h97" class="pl"/><circle cx="50" cy="74" r="11" class="pl"/><rect x="27" y="1.5" width="46" height="17" class="pl"/><rect x="27" y="129.5" width="46" height="17" class="pl"/>${nodes}</svg>`;
+}
+/* la misma alineación en lista: se lee sin esfuerzo en el móvil */
+function lineupList(L){
+  const order=['GK','DEF','MID','FWD'],nm={GK:'Portería',DEF:'Defensa',MID:'Mediocampo',FWD:'Ataque'};
+  return `<div class="xilist">${order.map(g=>{const rows=L.xi.filter(x=>x.slot===g).sort((a,b)=>(a.lat||0)-(b.lat||0));return rows.length?`<div class="lbl xig" style="color:${GRP_COL[g]}">${nm[g]}</div>`+rows.map(x=>`<button class="xirow" data-act="slot" data-i="${x.idx}"><span class="xipos" style="background:${x.pen>=4?'#e5484d':x.pen>0?'#f2c200':GRP_COL[g]}">${SPL[x.spos]}</span><span class="xinm"><b class="ellip">${esc(x.p.name)}${x.fixed?' ★':''}</b><span class="sub ellip">${x.pen>0?`Natural: ${SPL[x.p.sp]||POSL[x.p.pos]} · pierde ${x.pen.toFixed(1)}`:'En su posición'} · condición ${Math.round(x.p.fit)}%</span></span><span class="xiovr">${x.p.ovr}</span><span class="xichg">Cambiar</span></button>`).join(''):'';}).join('')}</div>`;
 }
 function lineupAdvice(c,L){
   const tips=[],xiIds=new Set(L.xi.map(x=>x.p.id));
@@ -41,7 +61,7 @@ function lineupMainHTML(c,L){
    <div class="formchips" role="group" aria-label="Sistema de juego">${chips}</div>
    ${show?`<div class="reco"><div><b>Recomendado: ${best.fk}</b><div class="sub">${best.nat}/11 en su posición · fuerza ${best.score.toFixed(1)} (ahora ${cur.score.toFixed(1)})</div></div><button class="btn sm pri" data-act="form" data-v="${best.fk}">Usar</button></div>`:`<div class="sub" style="margin:6px 0">Tu sistema actual es de los mejores para esta plantilla (★ = el que mejor encaja).</div>`}
    ${pitchInteractive(c,L)}
-   <p class="sub" style="margin:8px 0 0">Toca un hueco para elegir quién juega ahí. <b>★</b> = lo fijaste tú. Aro <span class="warn">ámbar</span> = fuera de su posición natural.</p></div>
+   <div class="plegend"><span><i style="background:#c59bff"></i>Portería</span><span><i style="background:#6aa5ff"></i>Defensa</span><span><i style="background:#4fd08a"></i>Medio</span><span><i style="background:#ff8f5c"></i>Ataque</span><span><i style="background:#f2c200"></i>Algo fuera de posición</span><span><i style="background:#e5484d"></i>Muy fuera</span></div><p class="sub" style="margin:6px 0 0">Toca un jugador (en el campo o en la lista) para cambiarlo. <b>★</b> = lo fijaste tú.</p>${lineupList(L)}</div>
    <div class="panel"><div class="hd"><h2>Consejos del asistente</h2></div>${tips.map(t=>`<div class="tip ${t.ic}"><span class="ti">${t.ic==='up'?'▲':t.ic==='warn'?'!':t.ic==='ok'?'✓':'i'}</span><div><div>${t.t}</div>${t.s?`<div class="sub">${t.s}</div>`:''}</div>${t.pid?`<button class="btn xs pri" data-act="tostart" data-id="${t.pid}">Titular</button>`:''}</div>`).join('')}</div>
    <div class="panel"><div class="hd"><h2>Banquillo y reservas</h2><span class="sub">${bench.length} jugadores</span></div>
     <p class="sub" style="margin-top:0">Los que juegan crecen y mantienen su nivel. Toca <b>A titular</b> para meterlos en el once o la ficha para ver su evolución.</p>

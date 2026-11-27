@@ -37,9 +37,9 @@ function mkClub(L,ti,idx,n,def,lgId,seen){
   const skill=Math.round(clamp(range[1]-(idx/(n-1))*(range[1]-range[0])+ri(-1,1),range[0]-1,range[1]+1));
   const cap=tier===1?Math.round((12000+(skill-70)*3300+ri(-3000,6000))/1000)*1000:tier===2?Math.round((4000+(skill-60)*1900+ri(-1500,3000))/500)*500:tier===3?Math.round((2500+(skill-45)*350+ri(-700,1300))/500)*500:Math.round((1500+(skill-35)*180+ri(-400,800))/500)*500;
   const rep=tier===1?Math.round(clamp(45+(skill-70)*2.3,30,95)):tier===2?Math.round(clamp(22+(skill-60)*2.2,10,50)):tier===3?Math.round(clamp(8+(skill-40)*1.2,5,30)):Math.round(clamp(3+(skill-30)*0.9,2,16));
-  const c={id:S.clubs.length,cc:L.cc,tier,lg:lgId,city,suf,name:city+' '+suf,short:shortFor(city,suf,seen),c1,c2,pat:hsh(city+suf)%5,skill,cap:Math.max(1500,cap),rep,
+  const c={id:S.clubs.length,cc:L.cc,tier,lg:lgId,city,suf,name:city+' '+suf,short:shortFor(city,suf,seen),c1,c2,pat:identPat(L.cc,tier,idx,city+suf),sh:identShape(city+suf),skill,cap:Math.max(1500,cap),rep,
     players:[],form:pick(FORM_LIST),formOut:null,tactic:'balance',ins:{},train:'bal',budget:0,mg:null,price:0,price0:0,tv:0,sp:0,staffC:0,board:60,
-    stad:pick(STAD_PRE[L.cc])+' '+city,vac:0,hist:{titles:0,best:99,seasons:0}};
+    stad:tier===1?(pick(STAD_PRE[L.cc]),identStad(L.cc,city,suf)):pick(STAD_PRE[L.cc])+' '+city,vac:0,hist:{titles:0,best:99,seasons:0}};
   S.clubs.push(c);buildSquad(c);setFinance(c);
   c.mg={n:genName(pick([L.cc,L.cc,'EN','ES','DE','IT'])),rep:Math.round(clamp(rep+ri(-12,10),5,95)),since:S.Y};
   return c;
@@ -85,7 +85,7 @@ function genFreeTrickle(){
   const p=mkPlayer(pick(POS),rnd(t0,t1),a0,a1,pickNat(pick(LEAGUES).cc),null,tag==='gem'?{yq:1.15}:undefined);p.where='free';p.fa=S.t;p.fc=tag;S.players[p.id]=p;S.free.push(p.id);
 }
 function genWorld(){
-  S={v:4,nid:1,Y:2026,t:dayOf(2026,7,1),players:{},clubs:[],leagues:[],free:[],pools:{},know:{},kq:{},short:[],reports:[],news:[],inbox:[],mgrs:[],ledger:[],
+  S={v:4,ident:1,nid:1,Y:2026,t:dayOf(2026,7,1),players:{},clubs:[],leagues:[],free:[],pools:{},know:{},kq:{},short:[],reports:[],news:[],inbox:[],mgrs:[],ledger:[],
      hist:{champs:[],seasons:[]},staff:{hired:[],market:[]},scout:{miss:{}},ac:null,user:null,mgr:null,pend:null,summary:null,uid:1,tr:[],obj:{},mid:1,watch:{},records:{},mres:[],tn:{},ev:{}};
   LEAGUES.forEach(L=>{
     L.t.forEach((T,ti)=>{

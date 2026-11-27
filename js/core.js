@@ -9,6 +9,7 @@ const $=s=>document.querySelector(s);
 const hsh=s=>{let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h);};
 const strip=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'');
 const EUR=n=>{const a=Math.abs(n),s=a>=1e9?(a/1e9).toFixed(2)+'MM':a>=1e6?(a/1e6).toFixed(a>=1e7?1:2)+'M':a>=1e3?Math.round(a/1e3)+'k':String(Math.round(a));return (n<0?'-':'')+'€'+s;};
+const EXACT=v=>((v||0)<0?'-':'')+'€'+Math.round(Math.abs(v||0)).toLocaleString('de-DE');
 const hex2rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const lum=h=>{const [r,g,b]=hex2rgb(h).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);});return .2126*r+.7152*g+.0722*b;};
 const mixHex=(a,b,t)=>{const A=hex2rgb(a),B=hex2rgb(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');};
@@ -150,12 +151,12 @@ const worldOk=s=>!!(s&&s.leagues&&LEAGUES.every(L=>s.leagues.some(l=>l.cc===L.cc
 async function loadSaveAsync(slot){
   try{
     const j=slotsMeta(),sl=slot==null?j.last:slot;
-    if(typeof indexedDB==='undefined'){const r=localStorage.getItem(SAVE_KEY+'.'+sl)||(sl===0?localStorage.getItem(SAVE_KEY):null);if(r){const s=JSON.parse(r);if(s&&s.v===4&&worldOk(s)){s.slot=sl;S=s;return true;}}return false;}
+    if(typeof indexedDB==='undefined'){const r=localStorage.getItem(SAVE_KEY+'.'+sl)||(sl===0?localStorage.getItem(SAVE_KEY):null);if(r){const s=JSON.parse(r);if(s&&s.v===4&&worldOk(s)){s.slot=sl;S=s;applyIdentity();return true;}}return false;}
     const db=await idbOpen();
     const get=k=>new Promise((res,rej)=>{const r=db.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
     let data=await get('slot:'+sl);
     if(!data&&sl===0)data=await get('save');
-    if(data&&data.v===4&&worldOk(data)){data.slot=sl;S=data;return true;}
+    if(data&&data.v===4&&worldOk(data)){data.slot=sl;S=data;applyIdentity();return true;}
   }catch(e){SAVE_ERR=e.message;}
   return false;
 }

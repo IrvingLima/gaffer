@@ -54,7 +54,7 @@ function renderSetup(){
     ${diffPicker(U)}
     <div class="row" style="margin-top:22px"><label class="sr" for="mgr">Tu nombre</label><input id="mgr" type="text" maxlength="24" placeholder="Tu nombre de mánager" value="${esc(U.mgr)}"><button class="btn pri lg" data-act="start" ${U.idx<0?'disabled':''}>Empezar carrera ${ic('arrow')}</button></div>`;
   }else if(U.step==='create'){
-    const cr=U.create,fake={name:(cr.city||'Ciudad')+' '+(cr.suf||'Club'),short:strip((cr.city||'CIU').slice(0,2)+(cr.suf||'C')[0]).toUpperCase(),c1:cr.c1,c2:cr.c2,pat:cr.pat};
+    const cr=U.create,fake={name:(cr.city||'Ciudad')+' '+(cr.suf||'Club'),short:strip((cr.city||'CIU').slice(0,2)+(cr.suf||'C')[0]).toUpperCase(),c1:cr.c1,c2:cr.c2,pat:cr.pat,sh:cr.sh||0};
     const sw=['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'];
     h+=`<div style="margin-top:20px"><button class="btn sm ghost" data-act="backsetup">${ic('back')} Ligas</button></div><div class="tag" style="font-size:clamp(38px,7vw,64px)">Crea tu<br><i>club</i></div>
     <div class="grid g2" style="align-items:start"><div class="panel"><div class="field"><label for="cc_city">Ciudad</label><input id="cc_city" type="text" maxlength="22" value="${esc(cr.city)}" placeholder="Ej. Sevilla"></div>
@@ -65,7 +65,7 @@ function renderSetup(){
     <div class="panel"><div class="row spread"><span class="lbl">Vista previa</span></div><div class="row" style="justify-content:center;margin:10px 0">${crest(fake,96)}</div><div style="text-align:center;font-family:var(--display);font-size:26px;text-transform:uppercase;font-weight:800">${esc(fake.name)}</div>
     <div class="field"><label>Color principal</label><div class="row" style="gap:8px">${sw.map(x=>`<button class="swatch ${cr.c1===x?'on':''}" style="background:${x}" data-act="cc1" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div>
     <div class="field"><label>Color secundario</label><div class="row" style="gap:8px">${sw.map(x=>`<button class="swatch ${cr.c2===x?'on':''}" style="background:${x}" data-act="cc2" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div>
-    <div class="field"><label>Escudo</label><div class="row" style="gap:8px">${[0,1,2,3,4].map(p=>`<button class="btn sm ${cr.pat===p?'on':''}" data-act="cpat" data-v="${p}" aria-label="Diseño ${p+1}">${crest({...fake,pat:p},34)}</button>`).join('')}</div></div></div></div>
+    <div class="field"><label>Escudo</label><div class="row" style="gap:8px;flex-wrap:wrap">${PAT_LIST.map(p=>`<button class="btn sm ${cr.pat===p?'on':''}" data-act="cpat" data-v="${p}" aria-label="Diseño ${p+1}">${crest({...fake,pat:p},34)}</button>`).join('')}</div><div class="lbl" style="margin:10px 0 6px">Forma</div><div class="row" style="gap:8px;flex-wrap:wrap">${CREST_SHAPES.map((_,i)=>`<button class="btn sm ${(cr.sh||0)===i?'on':''}" data-act="csh" data-v="${i}" aria-label="Forma ${i+1}">${crest({...fake,sh:i},34)}</button>`).join('')}</div></div></div></div>
     <p class="sub">Tu club entra en la 2ª división del país elegido, sustituyendo al más débil. Empezarás desde abajo.</p>
     <div class="row"><input id="mgr" type="text" maxlength="24" placeholder="Tu nombre de mánager" value="${esc(U.mgr)}"><button class="btn pri lg" data-act="docreate" ${cr.city&&cr.suf?'':'disabled'}>Crear y empezar ${ic('arrow')}</button></div>`;
   }
@@ -300,16 +300,13 @@ function visiblePlayers(){
   return out.sort((a,b)=>key(a)-key(b));
 }
 function vMarket(){
-  const c=userClub();let h=subnav('market',[['search','Buscar'],['free','Agentes libres'],['sell','Vender'],['windows','Ventanas']]);
+  const c=userClub();let h=subnav('market',[['hub','Centro'],['search','Buscar'],['free','Libres'],['sell','Vender'],['windows','Ventanas']]);
   const w=winInfo(c.cc,S.t);
-  h+=`<div class="panel flat" style="padding:0;margin:10px 0"><span class="chip ${w.open?'good':'bad'}">${w.open?'Mercado abierto · cierra el '+fmtD(w.closes):'Mercado cerrado · abre el '+fmtD(w.opens)}</span> <span class="sub">Los agentes libres se pueden fichar siempre.</span></div>`;
-  if(UI.sub.market==='search'){h+=marketSearchHTML();
+  if(UI.sub.market==='free'||UI.sub.market==='sell')h+=`<div class="panel flat" style="padding:10px 12px;margin:10px 0"><span class="chip ${w.open?'good':'bad'}">${w.open?'Mercado abierto · cierra el '+fmtD(w.closes):'Mercado cerrado · abre el '+fmtD(w.opens)}</span> <span class="sub">Los agentes libres se pueden fichar siempre.</span></div>`;
+  if(UI.sub.market==='hub'){h+=marketHubHTML();
+  }else if(UI.sub.market==='search'){h+=marketSearchHTML();
   }else if(UI.sub.market==='free'){h+=marketFreeHTML();
-  }else if(UI.sub.market==='sell'){
-    const pl=c.players.map(i=>S.players[i]).sort((a,b)=>valueOf(b)-valueOf(a)),off=S.inbox.filter(m=>m.ty==='offer'&&!m.done);
-    h+=`${off.length?`<div class="panel"><div class="hd"><h2>Ofertas recibidas</h2></div>${off.map(msgHTML).join('')}</div>`:''}
-    <div class="panel"><div class="hd"><h2>Tus jugadores</h2><span class="sub">Pon en venta para recibir más ofertas</span></div><div class="scroll"><table><tr><th>Jugador</th><th class="n">Valor</th><th class="n">Venta directa</th><th></th></tr>
-    ${pl.slice(0,40).map(p=>`<tr><td><div class="club">${posTag(p.pos,p)}<span><b>${esc(p.name)}</b> <span class="sub">${p.age} · ${p.ovr}</span></span></div></td><td class="n">${EUR(valueOf(p))}</td><td class="n">${EUR(sellPrice(p))}</td><td class="n"><button class="btn xs ${p.tl?'on':''}" data-act="tl" data-id="${p.id}">${p.tl?'En venta':'Poner en venta'}</button> <button class="btn xs" data-act="sellp2" data-id="${p.id}" ${w.open?'':'disabled'}>Vender</button></td></tr>`).join('')}</table></div></div>`;
+  }else if(UI.sub.market==='sell'){h+=sellHTML();
   }else{
     h+=`<div class="panel"><div class="hd"><h2>Ventanas por país</h2><span class="sub">Fechas aproximadas del calendario real</span></div><table><tr><th>País</th><th>Estado</th><th class="n">Próximo cambio</th></tr>${LEAGUES.map(L=>{const i=winInfo(L.cc,S.t);return `<tr class="${L.cc===c.cc?'me':''}"><td>${L.nm}</td><td><span class="chip ${i.open?'good':'bad'}">${i.open?'Abierta':'Cerrada'}</span></td><td class="n">${i.open?'cierra '+fmtD(i.closes):'abre '+fmtD(i.opens)}</td></tr>`;}).join('')}</table></div>
     <div class="panel"><div class="hd"><h2>Traspasos recientes</h2></div>${S.news.filter(x=>x.ty==='t').slice(0,12).map(x=>`<div class="news"><span class="w">${dateOf(x.t).toLocaleDateString('es',{day:'numeric',month:'short',timeZone:'UTC'})}</span><span>${esc(x.txt)}</span></div>`).join('')||'<div class="empty">Aún no hay traspasos destacados.</div>'}</div>`;
@@ -343,7 +340,7 @@ function vClub(){
     h+=`<div class="panel"><div class="hd"><h2>Identidad del club</h2><span class="sub">Edítala cuando quieras</span></div><div class="grid g2" style="align-items:start"><div><div class="field"><label for="id_suf">Nombre</label><input id="id_suf" type="text" maxlength="18" value="${esc(c.suf)}"></div><div class="field"><label for="id_stad">Estadio</label><input id="id_stad" type="text" maxlength="26" value="${esc(c.stad)}"></div>
     <div class="field"><label>Color principal</label><div class="row" style="gap:8px">${['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'].map(x=>`<button class="swatch ${c.c1===x?'on':''}" style="background:${x}" data-act="idc1" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div>
     <div class="field"><label>Color secundario</label><div class="row" style="gap:8px">${['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'].map(x=>`<button class="swatch ${c.c2===x?'on':''}" style="background:${x}" data-act="idc2" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div></div>
-    <div><div class="row" style="justify-content:center;margin:6px 0">${crest(c,110)}</div><div class="field"><label>Escudo</label><div class="row" style="gap:8px;justify-content:center">${[0,1,2,3,4].map(p=>`<button class="btn sm ${c.pat===p?'on':''}" data-act="idpat" data-v="${p}">${crest({...c,pat:p},30)}</button>`).join('')}</div></div></div></div></div>`;
+    <div><div class="row" style="justify-content:center;margin:6px 0">${crest(c,110)}</div><div class="field"><label>Escudo</label><div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap">${PAT_LIST.map(p=>`<button class="btn sm ${c.pat===p?'on':''}" data-act="idpat" data-v="${p}" aria-label="Diseño ${p+1}">${crest({...c,pat:p},30)}</button>`).join('')}</div><div class="lbl" style="margin:10px 0 6px">Forma</div><div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center">${CREST_SHAPES.map((_,i)=>`<button class="btn sm ${(c.sh||0)===i?'on':''}" data-act="idsh" data-v="${i}" aria-label="Forma ${i+1}">${crest({...c,sh:i},30)}</button>`).join('')}</div></div></div></div></div>`;
   }
   return h;
 }

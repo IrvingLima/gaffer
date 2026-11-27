@@ -244,7 +244,7 @@ function createClub(cc,cfg){
   // reemplaza la identidad del club más débil de 2ª división del país elegido
   const lg=S.leagues.find(l=>l.cc===cc&&l.tier===4);
   const c=lg.ids.map(id=>S.clubs[id]).sort((a,b)=>a.skill-b.skill)[0];
-  c.city=cfg.city;c.suf=cfg.suf;c.name=cfg.city+' '+cfg.suf;c.c1=cfg.c1;c.c2=cfg.c2;c.pat=cfg.pat;c.stad=cfg.stad||('Estadio '+cfg.city);
+  c.city=cfg.city;c.suf=cfg.suf;c.name=cfg.city+' '+cfg.suf;c.c1=cfg.c1;c.c2=cfg.c2;c.pat=cfg.pat;c.sh=cfg.sh||0;c.stad=cfg.stad||('Estadio '+cfg.city);
   const seen={};lg.ids.forEach(id=>{if(id!==c.id)seen[S.clubs[id].short]=1;});c.short=shortFor(c.city,c.suf,seen);c.custom=true;c.phil=cfg.phil||'balance';
   c.rival=pick(lg.ids.filter(id=>id!==c.id));
   return c.id;
