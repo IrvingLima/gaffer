@@ -442,3 +442,15 @@ select{padding-right:8px}input[type=range]{width:100%;accent-color:var(--acc);he
 .modal .box.settings{max-width:560px}.seth{margin:18px 0 8px;padding-top:12px;border-top:1px solid var(--line)}.mhead+.seth{margin-top:0;padding-top:0;border-top:0}
 .setrow{margin:10px 0}.setrow .lbl{margin-bottom:6px}.settings .setseg{display:flex;width:100%}.settings .setseg>button{flex:1;min-width:0;min-height:44px;padding-left:4px;padding-right:4px}
 .setbtns{display:grid;gap:8px}.setbtns .btn{min-height:46px}
+/* ---- selector de sistemas ---- */
+.formfold{border:1px solid var(--line);border-radius:12px;background:var(--s2);margin:6px 0}.formfold>summary{cursor:pointer;padding:12px 14px;min-height:44px}.formfold .fgroup{padding:0 10px 8px}.formfold .fgroup .lbl{margin:6px 0}.formfold .formchips{flex-wrap:wrap;overflow:visible}
+/* ---- estadísticas de plantilla ---- */
+.tsgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px}.tsgrid .stat{min-width:0;text-align:left}button.stat.lead{cursor:pointer;font:inherit;color:inherit;border:1px solid var(--line);border-radius:12px;background:var(--s1)}
+.tstab td,.tstab th{white-space:nowrap}.tstab th:first-child,.tstab td:first-child{position:sticky;left:0;background:var(--s1);z-index:1}.tsname{display:flex;gap:6px;align-items:center;max-width:150px}
+.thbtn{background:none;border:0;color:inherit;font:inherit;cursor:pointer;min-height:36px;padding:0 4px;text-transform:inherit;letter-spacing:inherit}.thbtn.on{color:var(--acc)}.tstab td.on{font-weight:700;color:var(--acc)}
+.offs>summary{cursor:pointer;padding:10px 0;min-height:44px;font-weight:600}
+/* ---- ojeo ---- */
+.scmis{margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--s2)}
+.screp{border-bottom:1px solid var(--line);padding:4px 0}.screp>summary{display:flex;gap:8px;align-items:center;cursor:pointer;padding:10px 0;min-height:44px}.screp.new>summary b{color:var(--acc)}.screp .mcards{margin-bottom:10px}
+.scard{min-width:0;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--s1);cursor:pointer}
+.modal .box.settings .setseg{flex-wrap:wrap}

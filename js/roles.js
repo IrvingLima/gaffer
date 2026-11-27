@@ -20,7 +20,26 @@ const FSLOTS={
  '4-1-4-1':['GK','LB','CB','CB','RB','CDM','LM','CM','CM','RM','ST'],
  '4-3-2-1':['GK','LB','CB','CB','RB','CM','CM','CM','CAM','CAM','ST'],
  '4-2-2-2':['GK','LB','CB','CB','RB','CDM','CDM','CAM','CAM','ST','ST'],
- '3-4-1-2':['GK','CB','CB','CB','LM','CM','CM','RM','CAM','ST','ST']
+ '3-4-1-2':['GK','CB','CB','CB','LM','CM','CM','RM','CAM','ST','ST'],
+ '4-3-3 Plano':['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW'],
+ '4-3-3 Ofensivo':['GK','LB','CB','CB','RB','CM','CM','CAM','LW','ST','RW'],
+ '4-3-3 Defensivo':['GK','LB','CB','CB','RB','CDM','CM','CDM','LW','ST','RW'],
+ '4-3-3 Falso 9':['GK','LB','CB','CB','RB','CM','CDM','CM','LW','CF','RW'],
+ '4-2-1-3':['GK','LB','CB','CB','RB','CDM','CDM','CAM','LW','ST','RW'],
+ '4-4-2 Contención':['GK','LB','CB','CB','RB','LM','CDM','CDM','RM','ST','ST'],
+ '4-1-2-1-2':['GK','LB','CB','CB','RB','CDM','LM','CAM','RM','ST','ST'],
+ '4-1-2-1-2 Cerrado':['GK','LB','CB','CB','RB','CDM','CM','CM','CAM','ST','ST'],
+ '4-1-3-2':['GK','LB','CB','CB','RB','CDM','LM','CM','RM','ST','ST'],
+ '4-2-3-1 Cerrado':['GK','LB','CB','CB','RB','CDM','CDM','CAM','CAM','CAM','ST'],
+ '4-5-1 Ofensivo':['GK','LB','CB','CB','RB','LM','CAM','CM','CAM','RM','ST'],
+ '4-2-4':['GK','LB','CB','CB','RB','CM','CM','LW','ST','ST','RW'],
+ '3-1-4-2':['GK','CB','CB','CB','CDM','LM','CM','CM','RM','ST','ST'],
+ '3-4-2-1':['GK','CB','CB','CB','LM','CM','CM','RM','CAM','CAM','ST'],
+ '3-5-1-1':['GK','CB','CB','CB','LM','CM','CDM','CM','RM','CF','ST'],
+ '3-4-3 Rombo':['GK','CB','CB','CB','LM','CDM','CAM','RM','LW','ST','RW'],
+ '5-2-1-2':['GK','LWB','CB','CB','CB','RWB','CM','CM','CAM','ST','ST'],
+ '5-2-2-1':['GK','LWB','CB','CB','CB','RWB','CM','CM','CAM','CAM','ST'],
+ '5-2-3':['GK','LWB','CB','CB','CB','RWB','CM','CM','LW','ST','RW']
 };
 /* penalización por jugar fuera de su sitio (pares simétricos) */
 const PENPAIR={'LB|RB':2.5,'LB|LWB':1,'RB|RWB':1,'LWB|RWB':2.5,'LB|RWB':3,'LWB|RB':3,'CB|LB':4,'CB|RB':4,'CB|LWB':5,'CB|RWB':5,'CB|CDM':3.5,'CDM|CM':1.5,'CAM|CM':1.5,'CAM|CDM':3.5,'CM|LM':2,'CM|RM':2,'LM|RM':2.5,'LM|LW':1.5,'RM|RW':1.5,'LW|RW':2.5,'LW|ST':3,'RW|ST':3,'CF|ST':1,'CAM|CF':2,'CAM|ST':3,'CF|LW':2,'CF|RW':2,'LB|LM':3,'RB|RM':3,'LWB|LM':1.5,'RWB|RM':1.5,'CDM|LB':4.5,'CDM|RB':4.5,'LM|RW':3.5,'RM|LW':3.5,'LM|RM':2.5,'CAM|LW':3,'CAM|RW':3,'CAM|LM':2.5,'CAM|RM':2.5,'CDM|LM':3.5,'CDM|RM':3.5};

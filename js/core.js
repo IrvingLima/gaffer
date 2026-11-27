@@ -78,8 +78,8 @@ function mkPlayer(pos,target,ageMin,ageMax,nat,clubId,opt){
   return addRole(p);
 }
 const staffAbSafe=role=>{const s=S&&S.staff&&S.staff.hired.find(x=>x.role===role);return s?s.ab:3;};
-const rateOf=p=>TRAITS[p.tr][1];
-const traitOf=p=>TRAITS[p.tr][0];
+const rateOf=p=>(TRAITS[p.tr]||['',1])[1];
+const traitOf=p=>(TRAITS[p.tr]||['',1])[0];
 const sname=p=>{const parts=p.name.split(' ');return parts.length>1?parts.slice(1).join(' '):p.name;};
 const inits=p=>p.name.split(' ').map(w=>w[0]).join('').slice(0,2);
 
@@ -140,7 +140,7 @@ function save(){
   clearTimeout(_saveT);_saveT=setTimeout(flushSave,250);return true;
 }
 async function flushSave(){
-  if(!S||typeof indexedDB==='undefined')return;
+  if(!S||!S.mgr||typeof indexedDB==='undefined')return; /* un mundo sin carrera empezada no ocupa ranura */
   try{
     const db=await idbOpen(),sl=S.slot||0;
     await new Promise((res,rej)=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(S,'slot:'+sl);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});

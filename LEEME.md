@@ -1,4 +1,4 @@
-# Gaffer — Modo Carrera (v4.47)
+# Gaffer — Modo Carrera (v4.48)
 
 Abre **`index.html`** con doble clic en cualquier navegador (también en móvil). Se guarda solo en tu dispositivo (IndexedDB), **se instala como app (PWA) y abre sin conexión** (tras la primera visita) y no tiene anuncios ni pagos. Hay **6 ranuras de carrera** para jugar partidas simultáneas.
 
@@ -44,3 +44,11 @@ Exportar/importar partida a archivo `.gaffer`; potencial dinámico en el primer 
 
 ## Novedades v4.47
 - Ajustes dentro de la partida (engranaje en el móvil, «Ajustes» en el escritorio): nombre del mánager, dificultad, tema, opciones de partido, medias exactas, guardar, exportar y salir al menú.
+
+## Novedades v4.48
+- Negociación: lo que piden el club o el agente es un compromiso; al aceptarlo se cierra el trato sin nuevas exigencias.
+- Nombres con guiños y apodos propios en todos los clubes (`js/identity.js`); iniciales del escudo editables.
+- 33 sistemas de juego, agrupados por línea defensiva.
+- Equipo → Estadísticas: partidos, goles, asistencias, tiros, tarjetas, porterías a cero, MVP y nota (`js/pstats.js`).
+- Agentes libres que fichan todo el año, reposición del mercado libre y mercado de final de temporada con resumen (`js/market3.js`).
+- Ojeo: encargos con más filtros, informes periódicos (también sin resultados), avisos y valoración (`js/scout2.js`, `js/ui-scout.js`).

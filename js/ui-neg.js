@@ -128,7 +128,7 @@ document.addEventListener('click',e=>{
     if(r.state==='lost'){save();render();}renderModal();const ch=$('#chat');if(ch)ch.scrollTop=ch.scrollHeight;return;}
   if(a==='negcounter'){const pid=UI.m.pid,O=UI.offer,n=negGet(pid),c=(O.res.counters||[])[+v];if(!c)return;
     if(n.stage==='club'){O.fee=c.fee;O.sellOn=c.sellOn||0;O.bonus=c.bonus||0;const r=negClub(pid,{fee:O.fee,sellOn:O.sellOn,bonus:O.bonus,swap:O.swap==null?null:O.swap},O.dest);O.res=r;if(r.state==='accept'){O.wage=Math.max(O.wage,wageAsk(S.players[pid]).w);O.res=null;}}
-    else{O.wage=c.wage;O.sign=c.sign||0;const r=negPlayer(pid,{wage:O.wage,years:O.years,sign:O.sign});O.res=r;if(r.state==='signed'){const nm=S.players[pid].name;save();UI.m=null;$('#modalRoot').innerHTML='';render();toast(`${nm} firma con tu club.`);return;}}
+    else{O.wage=c.wage;O.sign=c.sign||0;if(c.years)O.years=c.years;const r=negPlayer(pid,{wage:O.wage,years:O.years,sign:O.sign});O.res=r;if(r.state==='signed'){const nm=S.players[pid].name;save();UI.m=null;$('#modalRoot').innerHTML='';render();toast(`${nm} firma con tu club.`);return;}}
     renderModal();return;}
   if(a==='negplayer'){const pid=UI.m.pid,O=UI.offer,r=negPlayer(pid,{wage:O.wage,years:O.years,sign:O.sign});O.res=r;
     if(r.state==='signed'){const nm=S.players[pid].name;save();UI.m=null;$('#modalRoot').innerHTML='';render();toast(`${nm} firma con tu club.`);return;}renderModal();return;}

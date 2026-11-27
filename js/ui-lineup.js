@@ -15,7 +15,7 @@ function slotXY(xi){
   });
   return out;
 }
-const shortName=(p,max)=>{const n=sname(p).split(' ')[0];return n.length>max?n.slice(0,max-1)+'…':n;};
+const shortName=(p,max)=>{const w=sname(p).split(' '),n=w.length>1&&/^(de|del|da|das|dos|di|le|la|van|von|el|al|der|den|mac|san)$/i.test(w[0])?w[0]+' '+w[1]:w[0];return n.length>max?n.slice(0,max-1)+'…':n;};
 function pitchInteractive(c,L){
   const xy=slotXY(L.xi),ink=lum(c.c1)>0.4?'#111':'#fff';
   const nodes=L.xi.map(x=>{
@@ -54,11 +54,12 @@ function lineupAdvice(c,L){
 function lineupMainHTML(c,L){
   const rep=formationReport(c.id),best=rep[0],cur=rep.find(r=>r.fk===c.form)||rep[0],natNow=L.xi.filter(x=>x.pen===0).length;
   const show=best.fk!==c.form&&(best.score-cur.score>=0.15||best.nat>=cur.nat+2);
-  const chips=Object.keys(FORMS).map(fk=>{const r=rep.find(x=>x.fk===fk);return `<button class="formchip ${c.form===fk?'on':''}" data-act="form" data-v="${fk}" aria-pressed="${c.form===fk}"><b>${fk}</b><span>${r.nat}/11 ${r===best?'★':''}</span></button>`;}).join('');
+  const chip=fk=>{const r=rep.find(x=>x.fk===fk);return `<button class="formchip ${c.form===fk?'on':''}" data-act="form" data-v="${fk}" aria-pressed="${c.form===fk}"><b>${fk}</b><span>${r.nat}/11 ${r===best?'★':''}</span></button>`;};
+  const chips=[3,4,5].map(n=>`<div class="fgroup"><div class="lbl">Defensa de ${n}</div><div class="formchips" role="group" aria-label="Sistemas con ${n} defensas">${Object.keys(FORMS).filter(f=>FORMS[f][0]===n).sort().map(chip).join('')}</div></div>`).join('');
   const tips=lineupAdvice(c,L);
   const bench=c.players.map(i=>S.players[i]).filter(p=>!L.xi.some(x=>x.p.id===p.id)).sort((a,b)=>b.ovr-a.ovr);
   return `<div class="panel lineup-top"><div class="hd"><h2>Tu once</h2><span class="chip ${natNow>=9?'good':natNow>=7?'info':'warn'}">${natNow}/11 en su posición</span></div>
-   <div class="formchips" role="group" aria-label="Sistema de juego">${chips}</div>
+   <details class="formfold" ${UI.formOpen?'open':''}><summary data-act="formfold">Sistema: <b>${c.form}</b> <span class="sub">· toca para ver los ${Object.keys(FORMS).length}</span></summary>${chips}</details>
    ${show?`<div class="reco"><div><b>Recomendado: ${best.fk}</b><div class="sub">${best.nat}/11 en su posición · fuerza ${best.score.toFixed(1)} (ahora ${cur.score.toFixed(1)})</div></div><button class="btn sm pri" data-act="form" data-v="${best.fk}">Usar</button></div>`:`<div class="sub" style="margin:6px 0">Tu sistema actual es de los mejores para esta plantilla (★ = el que mejor encaja).</div>`}
    ${pitchInteractive(c,L)}
    <div class="plegend"><span><i style="background:#c59bff"></i>Portería</span><span><i style="background:#6aa5ff"></i>Defensa</span><span><i style="background:#4fd08a"></i>Medio</span><span><i style="background:#ff8f5c"></i>Ataque</span><span><i style="background:#f2c200"></i>Algo fuera de posición</span><span><i style="background:#e5484d"></i>Muy fuera</span></div><p class="sub" style="margin:6px 0 0">Toca un jugador (en el campo o en la lista) para cambiarlo. <b>★</b> = lo fijaste tú.</p>${lineupList(L)}</div>
@@ -69,6 +70,7 @@ function lineupMainHTML(c,L){
      ${p.inj?'':`<button class="btn xs pri" data-act="tostart" data-id="${p.id}">A titular</button>`}</div>`).join('')}</div>
    <details class="mapfold"><summary class="sub">Sistema sin balón (avanzado)</summary><div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn sm ${!c.formOut?'on':''}" data-act="formout" data-v="">Igual</button>${Object.keys(FORMS).map(f=>`<button class="btn sm ${c.formOut===f?'on':''}" data-act="formout" data-v="${f}">${f}</button>`).join('')}</div><p class="sub">Más defensas sin balón suben tu defensa y bajan tu ataque.</p></details>`;
 }
+document.addEventListener('toggle',e=>{if(e.target&&e.target.classList&&e.target.classList.contains('formfold'))UI.formOpen=e.target.open;},true);
 function mSlotPick(i){
   const c=userClub(),L=lineup(c.id),fk=c.form,sp=FSLOTS[fk][i],cur=L.xi[i],grp=cur.slot;
   const cands=c.players.map(i2=>S.players[i2]).filter(p=>!p.inj&&((grp==='GK')===(p.pos==='GK'))).map(p=>({p,pen:posPen(p,sp),s:eff(p)-posPen(p,sp)+psBonus(p,grp)})).sort((a,b)=>b.s-a.s).slice(0,16);

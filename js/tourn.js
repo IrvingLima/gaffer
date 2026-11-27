@@ -172,6 +172,7 @@ function commitTournMatch(M){
   const p=S.pend,T=S.tn[p.tid];if(!p||!T)return;
   if(p.g!=null){settleGroup(T,T.groups[p.g],M);applyLite(M,false);}
   else{const rd=T.rounds[p.r],tie=rd.ties[p.i];resolveTie(T,rd,tie,p.leg,M);applyLite(M,rd.neutral);}
+  recordStats(M);
   const my=M.hid===S.user?M.hg:M.ag,op=M.hid===S.user?M.ag:M.hg,c=userClub();
   if(my>op)c.rep=Math.min(95,c.rep+0.5);
   S.lastRes={h:M.hid,a:M.aid,hg:M.hg,ag:M.ag,t:S.t,sum:matchSummary(M),comp:T.nm};

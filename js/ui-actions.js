@@ -90,6 +90,7 @@ function mSummary(){
    ${(m.tn||[]).map(x=>`<div class="obj"><span class="ck ${x.champ?'ok':''}">${x.champ?ic('check','sm'):''}</span><div><b>${esc(x.nm)}</b><div class="sub">${esc(x.txt)}</div></div></div>`).join('')}
    ${u.top.length?`<h3 style="margin-top:12px">Goleadores del club</h3>${u.top.map(t=>`<div class="kv"><span>${esc(t.n)}</span><b>${t.g} goles · ${t.ap} part.</b></div>`).join('')}`:''}`:''}
    <h3 style="margin-top:12px">Campeones</h3>${m.champs.map(x=>`<div class="kv"><span>${LG_BY_CC[x.cc].nm} · ${esc(x.lg)}</span><b>${esc(x.club)}</b></div>`).join('')}
+   ${m.market&&m.market.top.length?`<h3 style="margin-top:12px">Mercado · ${m.market.total} fichajes</h3>${(m.market.local.length?m.market.local:m.market.top).slice(0,6).map(x=>`<div class="kv"><span>${esc(x.n)} (${x.ovr}) · ${x.from?esc(x.from):'Libre'} → ${esc(x.to)}</span><b>${x.fee?EUR(x.fee):'Libre'}</b></div>`).join('')}<div class="sub">Lo tienes completo en Mercado → Centro.</div>`:''}
    <h3 style="margin-top:12px">Ascensos y descensos</h3>${m.moves.map(x=>`<div class="sub"><b>${LG_BY_CC[x.cc].nm}:</b> suben ${x.up.map(esc).join(', ')} · bajan ${x.down.map(esc).join(', ')}</div>`).join('')}
    ${m.grads?`<div class="kv"><span>Graduados de cantera</span><b>${m.grads}</b></div>`:''}${m.lost&&m.lost.length?`<div class="why bad">Se van libres: ${m.lost.map(esc).join(', ')}</div>`:''}
    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn pri lg" data-act="mclose">Empezar ${m.cal?seasonLabel(m.Y+1,true):seasonLabel(S.Y)}</button></div>`,'wide');
@@ -186,6 +187,7 @@ function endMatchUI(){
 /* ================= eventos ================= */
 function startSetupDefaults(){UI.setup={step:'country',cc:null,tier:1,idx:-1,mgr:'',create:{city:'',suf:'',c1:'#2fbf84',c2:'#f2f2f0',pat:0,stad:''}};}
 function afterAdvance(r){
+  if(typeof scoutUnread==='function'){const n=scoutUnread();if(n>(UI.scN||0))toast(n===1?'Tienes un informe de ojeo nuevo.':`Tienes ${n} informes de ojeo nuevos.`);UI.scN=n;}
   if(r==='season'){UI.m={type:'summary'};}
   else if(r==='msg')toast('Tienes decisiones pendientes.');
   else if(r==='job')toast('Tienes una oferta de trabajo.');
@@ -315,7 +317,7 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('input',e=>{
   const t=e.target,id=t.id;if(!id)return;
   if(id==='mgr'){UI.setup.mgr=t.value;return;}
-  if(id==='cc_city'){UI.setup.create.city=t.value;return;}if(id==='cc_phil'){UI.setup.create.phil=t.value;return;}if(id==='cc_suf'){UI.setup.create.suf=t.value;return;}if(id==='cc_stad'){UI.setup.create.stad=t.value;return;}
+  if(id==='cc_city'){UI.setup.create.city=t.value;return;}if(id==='cc_phil'){UI.setup.create.phil=t.value;return;}if(id==='cc_suf'){UI.setup.create.suf=t.value;return;}if(id==='cc_stad'){UI.setup.create.stad=t.value;return;}if(id==='cc_short'){const v=t.value.toUpperCase().replace(/[^A-ZÑÇ0-9]/g,'').slice(0,4);UI.setup.create.short=v;t.value=v;return;}
   if(id==='of_fee'||id==='of_wage'||id==='of_years'||id==='of_sell'){
     const v=+t.value,O=UI.offer,f={of_fee:EUR,of_wage:x=>EUR(x)+'/sem',of_years:x=>x+(x===1?' año':' años'),of_sell:x=>x+'%'}[id];
     O[{of_fee:'fee',of_wage:'wage',of_years:'years',of_sell:'sellOn'}[id]]=v;$('#'+id+'v').textContent=f(v);if(id==='of_wage'&&$('#wmeter'))$('#wmeter').innerHTML=wageMeter(v);if(typeof updAnalyst==='function')updAnalyst();return;}
@@ -333,6 +335,7 @@ document.addEventListener('change',e=>{
   if(false){}
   else if(id==='lgsel'){UI.f.lg=+t.value;render();}
   else if(id==='id_suf'){const c=userClub();c.suf=t.value||c.suf;c.name=c.city+' '+c.suf;save();render();}
+  else if(id==='id_short'){const c=userClub(),v=t.value.toUpperCase().replace(/[^A-ZÑÇ0-9]/g,'').slice(0,4);if(v.length<2){t.value=c.short;toast('Usa de 2 a 4 letras o números.');}else{c.short=v;c.shortCustom=true;save();render();}}
   else if(id==='id_stad'){userClub().stad=t.value||userClub().stad;save();}
   else if(id==='ms_nat'||id==='ms_sc'){syncMis();renderModal();}
 });

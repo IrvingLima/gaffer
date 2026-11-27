@@ -120,7 +120,7 @@ function shotOutcome(M,m,home,sh,xg,q,O,mod){
   if(Math.random()<(0.4+0.2*q)*on){
     if(home)M.hsot++;else M.asot++;
     const pg=clamp((0.23+0.3*(q-0.5)-(O.gk-65)*0.003)*gm,0.05,0.6);
-    if(Math.random()<pg){kind='goal';if(home)M.hg++;else M.ag++;M.goals.push({pid:sh.id,home,m});}
+    if(Math.random()<pg){kind='goal';if(home)M.hg++;else M.ag++;M.goals.push({pid:sh.id,home,m,ast:pickAssist(((home?M.H:M.A)||{xi:[]}).xi,sh.id)});}
     else kind='save';
   }
   if(M.detail||kind==='goal')M.ev.push({m,t:kind,home,pid:sh.id,xg:+xg.toFixed(2),key:!!mod,

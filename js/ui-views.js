@@ -54,12 +54,13 @@ function renderSetup(){
     ${diffPicker(U)}
     <div class="row" style="margin-top:22px"><label class="sr" for="mgr">Tu nombre</label><input id="mgr" type="text" maxlength="24" placeholder="Tu nombre de mánager" value="${esc(U.mgr)}"><button class="btn pri lg" data-act="start" ${U.idx<0?'disabled':''}>Empezar carrera ${ic('arrow')}</button></div>`;
   }else if(U.step==='create'){
-    const cr=U.create,fake={name:(cr.city||'Ciudad')+' '+(cr.suf||'Club'),short:strip((cr.city||'CIU').slice(0,2)+(cr.suf||'C')[0]).toUpperCase(),c1:cr.c1,c2:cr.c2,pat:cr.pat,sh:cr.sh||0};
+    const cr=U.create,fake={name:(cr.city||'Ciudad')+' '+(cr.suf||'Club'),short:cr.short&&cr.short.length>=2?cr.short:strip((cr.city||'CIU').slice(0,2)+(cr.suf||'C')[0]).toUpperCase(),c1:cr.c1,c2:cr.c2,pat:cr.pat,sh:cr.sh||0};
     const sw=['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'];
     h+=`<div style="margin-top:20px"><button class="btn sm ghost" data-act="backsetup">${ic('back')} Ligas</button></div><div class="tag" style="font-size:clamp(38px,7vw,64px)">Crea tu<br><i>club</i></div>
     <div class="grid g2" style="align-items:start"><div class="panel"><div class="field"><label for="cc_city">Ciudad</label><input id="cc_city" type="text" maxlength="22" value="${esc(cr.city)}" placeholder="Ej. Sevilla"></div>
     <div class="field"><label for="cc_suf">Nombre del club</label><input id="cc_suf" type="text" maxlength="18" value="${esc(cr.suf)}" placeholder="Ej. Unión"></div>
     <div class="field"><label for="cc_phil">Filosofía del club</label><select id="cc_phil"><option value="balance" ${(cr.phil||'balance')==='balance'?'selected':''}>Equilibrada: sin sesgos</option><option value="cantera" ${cr.phil==='cantera'?'selected':''}>Cantera: +1 objetivo juvenil, la directiva premia más ascender canteranos</option><option value="fichajes" ${cr.phil==='fichajes'?'selected':''}>Fichajes: +15% presupuesto y +10% límite salarial, menos exigencia juvenil</option></select><div class="sub" style="margin-top:4px">También se te asignará un <b>rival histórico</b> de tu liga: sus partidos se marcan como derbi.</div></div>
+    <div class="field"><label for="cc_short">Iniciales del escudo (opcional)</label><input id="cc_short" type="text" maxlength="4" autocapitalize="characters" value="${esc(cr.short||'')}" placeholder="Automáticas"></div>
     <div class="field"><label for="cc_stad">Estadio</label><input id="cc_stad" type="text" maxlength="26" value="${esc(cr.stad)}" placeholder="Estadio municipal"></div>
     <div class="field"><label>País de la liga</label><select id="cc_cc">${LEAGUES.map(L=>`<option value="${L.cc}" ${U.cc===L.cc?'selected':''}>${L.nm}</option>`).join('')}</select></div></div>
     <div class="panel"><div class="row spread"><span class="lbl">Vista previa</span></div><div class="row" style="justify-content:center;margin:10px 0">${crest(fake,96)}</div><div style="text-align:center;font-family:var(--display);font-size:26px;text-transform:uppercase;font-weight:800">${esc(fake.name)}</div>
@@ -83,7 +84,7 @@ function _render(){
   const c=userClub(),emp=!c,pc=pendingCount();
   const tabs=emp?TABS.filter(t=>['career','league'].includes(t[0])):TABS;
   if(!tabs.some(t=>t[0]===UI.tab))UI.tab=tabs[0][0];
-  const links=tabs.map(([k,l,i])=>`<button data-tab="${k}" ${UI.tab===k?'aria-current="page"':''}>${ic(i)}<span>${l}</span>${k==='home'&&pc?`<span class="badge" aria-label="${pc} decisiones">${pc}</span>`:''}</button>`).join('');
+  const links=tabs.map(([k,l,i])=>`<button data-tab="${k}" ${UI.tab===k?'aria-current="page"':''}>${ic(i)}<span>${l}</span>${k==='home'&&pc?`<span class="badge" aria-label="${pc} decisiones">${pc}</span>`:''}${k==='scout'&&scoutUnread()?`<span class="badge" aria-label="${scoutUnread()} informes nuevos">${scoutUnread()}</span>`:''}</button>`).join('');
   const body=({home:vHome,team:vTeam,acad:vAcad,scout:vScout,market:vMarket,club:vClub,league:vLeague,career:vCareer})[UI.tab]();
   $('#app').innerHTML=`<div class="app"><nav class="rail" aria-label="Secciones"><div class="brand"><div class="wordmark">Gaffer<i>.</i></div></div><div class="links">${links}</div>
   <div class="railfoot"><button class="btn sm ghost" data-act="settings">${ic('cog')} Ajustes</button><button class="btn sm ghost" data-act="menu">Menú</button></div></nav>
@@ -160,7 +161,8 @@ function radarList(){
 }
 /* ---------- EQUIPO ---------- */
 function vTeam(){
-  let h=subnav('team',[['squad','Plantilla'],['lineup','Alineación'],['contracts','Contratos']]);
+  let h=subnav('team',[['squad','Plantilla'],['stats','Estadísticas'],['lineup','Alineación'],['contracts','Contratos']]);
+  if(UI.sub.team==='stats')return h+teamStatsHTML();
   const c=userClub();
   if(UI.sub.team==='squad'){
     h+=trainReportHTML();
@@ -246,7 +248,7 @@ function vAcad(){
 function natKnowLevel(nat){const n=S.reports.filter(r=>r.nat===nat).length;return n>=7?3:n>=3?2:n>=1?1:0;}
 function scoutsList(){return S.staff.hired.filter(s=>s.role==='scout');}
 function vScout(){
-  let h=subnav('scout',[['map','Mapa'],['scouts','Ojeadores'],['reports','Informes'],['short','Lista corta ('+S.short.length+')']]);
+  let h=subnav('scout',[['map','Mapa'],['scouts','Ojeadores'],['reports','Informes'+(scoutUnread()?' ('+scoutUnread()+')':'')],['short','Lista corta ('+S.short.length+')']]);
   const sc=scoutsList();
   if(UI.sub.scout==='map'){
     const maxY=Math.max(...NATS.map(n=>n[6]))+1,cells=[];
@@ -259,15 +261,12 @@ function vScout(){
     h+=`<div class="panel"><div class="hd"><h2>Mapa de ojeo</h2><div class="legend"><span><i style="background:var(--s1);border:1px solid var(--line)"></i>sin informes</span><span><i style="background:color-mix(in srgb,var(--acc) 42%,var(--s1))"></i>conocida</span><span><i style="background:var(--acc)"></i>bien cubierta</span><span><i style="background:var(--gold)"></i>liga simulada</span></div></div>
     ${worldMapHTML(sc)}<details class="mapfold" ${typeof innerWidth!=='undefined'&&innerWidth<640?'open':''}><summary class="sub">Lista de naciones (más fácil de tocar en el móvil)</summary><div class="map">${(typeof innerWidth!=='undefined'&&innerWidth<640?cells.filter(x=>x!=='<div></div>'):cells).join('')}</div></details><p class="sub" style="margin-bottom:0">Toca una nación del mapa para ver su talento y asignar un ojeador. Tus ${sc.length} ojeadores trabajan una nación cada uno; sus viajes se ven animados.</p></div>`;
     if(UI.sel.nat)h+=natPanel(UI.sel.nat);
-  }else if(UI.sub.scout==='scouts'){
-    h+=`<div class="panel"><div class="hd"><h2>Ojeadores</h2><button class="btn sm" data-act="goto" data-v="club:staff">Contratar más</button></div>${sc.length?sc.map(s=>{const m=S.scout.miss[s.id],best=Object.entries(s.kn).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>`${k} ${v}`).join(' · ');
-      return `<div class="msg"><div class="row spread"><div><b>${esc(s.nm)}</b><div class="sub">${NAT[s.nat].nm} · ${s.age} años · ${EUR(s.w)}/sem</div></div><span class="chip acc">Nivel ${s.ab}</span></div>
-      <div class="grid g3 keep" style="margin:10px 0"><div><div class="lbl">Juzgar nivel</div><div class="num" style="font-size:22px">${s.ja}</div></div><div><div class="lbl">Juzgar potencial</div><div class="num" style="font-size:22px">${s.jp}</div></div><div><div class="lbl">Adaptación</div><div class="num" style="font-size:22px">${s.ad}</div></div></div>
-      <div class="sub">Conoce mejor: ${best}</div><div class="row" style="margin-top:8px">${m?`<span class="chip good">${m.follow?'Siguiendo a '+esc(S.players[m.follow]?S.players[m.follow].name:'—'):'Ojeando '+NAT[m.nat].nm} · sem ${m.wk}</span>`:'<span class="chip bad">Sin misión</span>'}<button class="btn sm pri" data-act="mission" data-id="${s.id}">${m?'Cambiar misión':'Asignar misión'}</button><button class="btn sm danger" data-act="fire" data-id="${s.id}">Despedir</button></div></div>`;}).join(''):'<div class="empty">No tienes ojeadores. Contrátalos en Club › Staff.</div>'}</div>`;
+  }else if(UI.sub.scout==='scouts'){h+=scoutsTabHTML();
   }else if(UI.sub.scout==='reports'){
+    h+=scoutReportsHTML();
     const list=S.reports.map(r=>S.players[r.pid]).filter(p=>p&&p.where!=='retired'&&p.club!==S.user&&(UI.f.rep.pos==='ALL'||p.pos===UI.f.rep.pos)&&p.age<=UI.f.rep.maxAge);
     const seenIds=new Set(),uniq=list.filter(p=>seenIds.has(p.id)?false:seenIds.add(p.id));
-    h+=`<div class="panel"><div class="hd"><h2>Informes de ojeadores</h2><span class="sub">${uniq.length} jugadores</span></div><div class="row" style="margin-bottom:10px"><div class="seg">${['ALL','GK','DEF','MID','FWD'].map(k=>`<button class="${UI.f.rep.pos===k?'on':''}" data-act="rpos" data-v="${k}">${k==='ALL'?'Todos':POSL[k]}</button>`).join('')}</div>
+    h+=`<div class="panel"><div class="hd"><h2>Todos los jugadores vistos</h2><span class="sub">${uniq.length} jugadores</span></div><div class="row" style="margin-bottom:10px"><div class="seg">${['ALL','GK','DEF','MID','FWD'].map(k=>`<button class="${UI.f.rep.pos===k?'on':''}" data-act="rpos" data-v="${k}">${k==='ALL'?'Todos':POSL[k]}</button>`).join('')}</div>
     <div class="seg">${[[40,'Todos'],[21,'≤21'],[18,'≤18']].map(([v,l])=>`<button class="${UI.f.rep.maxAge===v?'on':''}" data-act="rage" data-v="${v}">${l}</button>`).join('')}</div></div>${playerTable(uniq.slice(0,60),true)}</div>`;
   }else{
     const list=S.short.map(i=>S.players[i]).filter(p=>p&&p.where!=='retired'&&p.club!==S.user);
@@ -337,7 +336,7 @@ function vClub(){
      <div class="kv"><span>Asistencia estimada</span><b id="tka">${att.toLocaleString('es')} (${Math.round(att/c.cap*100)}%)</b></div><div class="kv"><span>Precio de referencia</span><b>€${c.price0.toFixed(1)}</b></div><p class="sub" style="margin-bottom:0">Subir el precio aumenta lo que paga cada aficionado pero baja la asistencia.</p></div></div>
     <div class="panel"><div class="hd"><h2>Movimientos recientes</h2></div><div class="scroll"><table><tr><th>Fecha</th><th>Concepto</th><th class="n">Importe</th></tr>${S.ledger.slice(0,14).map(l=>`<tr><td>${fmtD(l.t)}</td><td>${esc(l.txt)}</td><td class="n ${l.v<0?'bad':'good'}">${EUR(l.v)}</td></tr>`).join('')||'<tr><td colspan="3" class="empty">Sin movimientos.</td></tr>'}</table></div></div>`;
   }else{
-    h+=`<div class="panel"><div class="hd"><h2>Identidad del club</h2><span class="sub">Edítala cuando quieras</span></div><div class="grid g2" style="align-items:start"><div><div class="field"><label for="id_suf">Nombre</label><input id="id_suf" type="text" maxlength="18" value="${esc(c.suf)}"></div><div class="field"><label for="id_stad">Estadio</label><input id="id_stad" type="text" maxlength="26" value="${esc(c.stad)}"></div>
+    h+=`<div class="panel"><div class="hd"><h2>Identidad del club</h2><span class="sub">Edítala cuando quieras</span></div><div class="grid g2" style="align-items:start"><div><div class="field"><label for="id_suf">Nombre</label><input id="id_suf" type="text" maxlength="18" value="${esc(c.suf)}"></div><div class="field"><label for="id_short">Iniciales (salen en el escudo, 2 a 4)</label><input id="id_short" type="text" maxlength="4" autocomplete="off" autocapitalize="characters" value="${esc(c.short)}"></div><div class="field"><label for="id_stad">Estadio</label><input id="id_stad" type="text" maxlength="26" value="${esc(c.stad)}"></div>
     <div class="field"><label>Color principal</label><div class="row" style="gap:8px">${['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'].map(x=>`<button class="swatch ${c.c1===x?'on':''}" style="background:${x}" data-act="idc1" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div>
     <div class="field"><label>Color secundario</label><div class="row" style="gap:8px">${['#d4161d','#1a3a8c','#1f8a3c','#f2c200','#141414','#f2f2f0','#6cabdd','#7a1f3a','#f26b1d','#5a2a8c','#0f6e5a','#e8d9a0'].map(x=>`<button class="swatch ${c.c2===x?'on':''}" style="background:${x}" data-act="idc2" data-v="${x}" aria-label="Color ${x}"></button>`).join('')}</div></div></div>
     <div><div class="row" style="justify-content:center;margin:6px 0">${crest(c,110)}</div><div class="field"><label>Escudo</label><div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap">${PAT_LIST.map(p=>`<button class="btn sm ${c.pat===p?'on':''}" data-act="idpat" data-v="${p}" aria-label="Diseño ${p+1}">${crest({...c,pat:p},30)}</button>`).join('')}</div><div class="lbl" style="margin:10px 0 6px">Forma</div><div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center">${CREST_SHAPES.map((_,i)=>`<button class="btn sm ${(c.sh||0)===i?'on':''}" data-act="idsh" data-v="${i}" aria-label="Forma ${i+1}">${crest({...c,sh:i},30)}</button>`).join('')}</div></div></div></div></div>`;

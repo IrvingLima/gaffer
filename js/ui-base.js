@@ -26,7 +26,7 @@ function crest(c,size){
   const busy=[1,2,5,7,8,9].includes(k),ty=k===0?19:k===10?27:k===4?35:23;
   return `<svg width="${size}" height="${Math.round(size*1.1)}" viewBox="0 0 40 44" role="img" aria-label="Escudo ${esc(c.name)}" style="flex:none"><defs><clipPath id="${id}"><path d="${shield}"/></clipPath></defs>
    <path d="${shield}" fill="${c.c1}"/><g clip-path="url(#${id})">${body}</g><path d="${shield}" fill="none" stroke="${lum(c.c1)<0.12?'#ffffff55':'#00000055'}" stroke-width="1.4"/>${busy?`<rect x="8" y="${ty-11}" width="24" height="14" rx="3" fill="${c.c1}" opacity=".93"/>`:''}
-   <text x="20" y="${ty}" text-anchor="middle" font-family="Big Shoulders Display,Arial Narrow,sans-serif" font-weight="800" font-size="12" letter-spacing=".5" fill="${t}" stroke="${t==='#fff'?'#0006':'#fff6'}" stroke-width=".5" paint-order="stroke">${esc(c.short)}</text></svg>`;
+   <text x="20" y="${ty}" text-anchor="middle" font-family="Big Shoulders Display,Arial Narrow,sans-serif" font-weight="800" font-size="${String(c.short).length>3?10:12}" letter-spacing=".5" fill="${t}" stroke="${t==='#fff'?'#0006':'#fff6'}" stroke-width=".5" paint-order="stroke">${esc(c.short)}</text></svg>`;
 }
 /* ---- acento del club ---- */
 const isDark=()=>document.documentElement.dataset.theme!=='light';

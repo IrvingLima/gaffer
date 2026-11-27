@@ -190,7 +190,7 @@ function renewAsk(p){
 }
 function renewPlayer(pid,wage,years){
   const p=S.players[pid],ask=renewAsk(p),c=userClub();
-  if(wage<ask*0.97)return `Pide al menos ${EUR(ask)}/sem para renovar.`;
+  if(wage<ask*0.97)return `Pide al menos ${EXACT(ask)}/sem para renovar.`;
   if(wageBill(c)-p.w+wage>wageLimit(c)*1.04)return 'Supera el límite salarial de la directiva.';
   p.w=wage;p.ce=Math.max(p.ce,S.Y)+years;p.remind=0;cleanMsgs();news(`${p.name} renueva hasta ${S.Y+years-1+1}.`,'n');return null;
 }

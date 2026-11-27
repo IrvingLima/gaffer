@@ -29,6 +29,10 @@ function negClub(pid,t,dest){
   n.round++;n.terms={...t,dest};
   const sw=(t.swap!=null&&S.players[t.swap]&&S.players[t.swap].club===S.user)?S.players[t.swap]:null,swV=sw?Math.round(valueOf(sw)*0.85/1000)*1000:0;
   if(sw&&pc&&pc.players.length>=27){res.state='closed';res.msg=`${pc.name} no tiene sitio en su plantilla para ${sw.name}.`;return res;}
+  const swId=sw?sw.id:null;
+  /* si cumples lo que el club pidió, el acuerdo es inmediato: no hay nueva exigencia, ni pierdes paciencia, ni puja un rival */
+  if(p.where!=='free'&&(n.stand||[]).some(s=>t.fee>=s.fee&&(t.sellOn||0)>=s.sellOn&&(t.bonus||0)>=s.bonus&&swId===s.swap)){
+    negLog(n,'you',`Aceptas sus condiciones: ${EXACT(t.fee)}${t.sellOn?` + ${t.sellOn}% de venta futura`:''}.`);return clubAccepts(n,p,pc,t,sw,res);}
   if(n.memo&&n.round===1)negLog(n,'club',`Recuerdan tu oferta anterior de ${EXACT(n.memo.fee)}: el precio sube un 5%.`);
   if(sw)negLog(n,'you',`Incluyes a ${sw.name} (${sw.ovr}), que valoran en ${EXACT(swV)}.`);
   const v=valueOf(p),A=askOf(p),ask=Math.round(A.fee*n.askMult/1000)*1000,eff=t.fee+clauseValue(p,t)+swV;
@@ -44,7 +48,7 @@ function negClub(pid,t,dest){
   }
   if(p.where==='free'){n.stage='player';n.patience=NEG_PATIENCE;res.state='accept';res.msg=`${p.name} es agente libre: pasamos a hablar con su agente.`;negLog(n,'club',res.msg);return res;}
   const ask2=Math.round(A.fee*n.askMult/1000)*1000;
-  if(eff>=ask2*0.999){n.stage='player';n.patience=NEG_PATIENCE;n.agreed={fee:t.fee,sellOn:t.sellOn||0,bonus:t.bonus||0,swap:sw?sw.id:null};res.state='accept';res.msg=`${pc.name} acepta ${EXACT(t.fee)}${t.sellOn?` con ${t.sellOn}% de venta futura`:''}. Ahora el jugador.`;negLog(n,'club',res.msg);return res;}
+  if(eff>=ask2*0.999)return clubAccepts(n,p,pc,t,sw,res);
   const ratio=eff/ask2;
   if(ratio>=0.92){
     const cv=clauseValue(p,t),plain=Math.round(ask2/1000)*1000;
@@ -52,47 +56,61 @@ function negClub(pid,t,dest){
     const f15=Math.max(0,Math.round((ask2-v*0.8*0.15-swV)/1000)*1000),f0=Math.max(0,plain-swV);
     res.msg=sw?`Estamos cerca. Contando a ${sname(sw)}, ${pc.name} pide ${EXACT(f0)} en efectivo, o ${EXACT(f15)} con un 15% de venta futura.`:res.msg;
     res.counters=[{l:`${EXACT(f0)} sin cláusulas`,fee:f0,sellOn:0,bonus:0},{l:`${EXACT(f15)} + 15% venta`,fee:f15,sellOn:15,bonus:0}];
+    n.stand=res.counters.map(x=>({fee:x.fee,sellOn:x.sellOn,bonus:x.bonus,swap:swId}));
     n.patience=Math.max(1,n.patience);negLog(n,'club',res.msg);return res;
   }
   if(ratio>=0.75){
-    const cf=Math.max(0,Math.round((ask2*0.98-swV)/1000)*1000);n.patience--;
+    const cf=Math.max(0,Math.round((ask2-swV)/1000)*1000);n.patience--;
     if(n.patience<=0){n.dead=true;n.cool=S.t+14;res.state='dead';res.msg=`${pc.name} se levanta de la mesa tras tantas ofertas bajas.`;negLog(n,'club',res.msg);return res;}
-    res.state='counter';res.msg=`Su oferta está por debajo de lo que valoramos. Nos vemos en ${EXACT(cf)}.`;res.counters=[{l:`${EXACT(cf)}`,fee:cf,sellOn:0,bonus:0}];negLog(n,'club',res.msg);return res;
+    res.state='counter';res.msg=`Su oferta está por debajo de lo que valoramos. Nos vemos en ${EXACT(cf)}.`;res.counters=[{l:`${EXACT(cf)}`,fee:cf,sellOn:0,bonus:0}];n.stand=[{fee:cf,sellOn:0,bonus:0,swap:swId}];negLog(n,'club',res.msg);return res;
   }
   n.patience--;n.askMult*=1.03;
   A.why.slice(0,1).forEach(w=>negLog(n,'club',w));
   if(n.patience<=0){n.dead=true;n.cool=S.t+14;res.state='dead';res.msg=`${pc.name} rompe las negociaciones: sus ofertas no son serias.`;negLog(n,'club',res.msg);return res;}
-  res.state='reject';res.msg=`Oferta muy baja. Valoramos a ${p.name} en torno a ${EXACT(Math.round(ask2*0.9/1e4)*1e4)}. (Paciencia ${n.patience}/${NEG_PATIENCE})`;negLog(n,'club',res.msg);return res;
+  const price=Math.max(0,Math.round((Math.round(A.fee*n.askMult/1000)*1000-swV)/1000)*1000);
+  res.state='reject';res.msg=`Oferta muy baja. Por ${EXACT(price)}${sw?' más '+sname(sw):''} cerramos el trato. (Paciencia ${n.patience}/${NEG_PATIENCE})`;
+  res.counters=[{l:EXACT(price),fee:price,sellOn:0,bonus:0}];n.stand=[{fee:price,sellOn:0,bonus:0,swap:swId}];negLog(n,'club',res.msg);return res;
+}
+function clubAccepts(n,p,pc,t,sw,res){
+  n.stage='player';n.patience=NEG_PATIENCE;n.stand=null;n.deal=null;
+  n.agreed={fee:t.fee,sellOn:t.sellOn||0,bonus:t.bonus||0,swap:sw?sw.id:null,cid:p.club};res.state='accept';
+  res.msg=`${pc.name} acepta ${EXACT(t.fee)}${t.sellOn?` con ${t.sellOn}% de venta futura`:''}. Ahora el jugador.`;negLog(n,'club',res.msg);return res;
 }
 /* ----- fase 2: el agente del jugador ----- */
+/* condiciones del agente: la prima mínima (libres y pre-contratos) y el salario que pide según la prima y los años */
+function agentTerms(p,n){
+  const WA=wageAsk(p),wk=n.pre?4:6,minSign=(p.where==='free'||n.pre)?Math.ceil(WA.w*wk/1000)*1000:0;
+  const req=(sign,years)=>{let r=WA.w*(1-Math.min(0.18,(sign||0)/(WA.w*40)));if(p.age>=31&&years>2)r*=1.04;if(p.age<=22&&years<3)r*=1.04;return r;};
+  return {WA,wk,minSign,req,wage:(sign,years)=>Math.ceil(req(sign,years)/100)*100};
+}
 function negPlayer(pid,t){
-  const p=S.players[pid],c=userClub(),n=negGet(pid),WA=wageAsk(p),res={state:'',msg:'',counters:[]};
-  const fee=(n.agreed&&n.agreed.fee)||0;
-  const wk=n.pre?4:6;
-  if((p.where==='free'||n.pre)&&(t.sign||0)<WA.w*wk){const need=Math.ceil(WA.w*wk/1000)*1000;res.state='counter';res.msg=`El agente de ${p.name} exige una prima de fichaje de al menos ${EXACT(need)} (${wk} semanas de salario).`;res.counters=[{l:`${EXACT(t.wage)}/sem + ${EXACT(need)} prima`,wage:t.wage,sign:need}];negLog(n,'agent',res.msg);return res;}
-  if(c.budget<fee+(t.sign||0)){res.state='closed';res.msg=`No tienes presupuesto para el traspaso y la prima (${EXACT(fee+(t.sign||0))}).`;return res;}
+  const p=S.players[pid],c=userClub(),n=negGet(pid),A=agentTerms(p,n),res={state:'',msg:'',counters:[]};
+  const fee=(n.agreed&&n.agreed.fee)||0,sign=t.sign||0;
+  if(!n.pre&&(n.agreed?(n.agreed.cid!=null&&p.club!==n.agreed.cid):p.where!=='free')){delete S.neg[pid];res.state='closed';res.msg=`${p.name} ya ha firmado por ${p.club!=null?S.clubs[p.club].name:'otro equipo'}: la negociación se cierra.`;return res;}
+  if(c.budget<fee+sign){res.state='closed';res.msg=`No tienes presupuesto para el traspaso y la prima (${EXACT(fee+sign)}).`;return res;}
+  const agreed=(n.deal||[]).some(d=>t.wage>=d.wage&&sign>=d.sign&&t.years===d.years);
+  const propose=(list,msg)=>{n.deal=list;res.state='counter';res.msg=msg;res.counters=list.map(d=>({l:`${EXACT(d.wage)}/sem${d.sign?' + '+EXACT(d.sign)+' prima':''}`,wage:d.wage,sign:d.sign,years:d.years}));negLog(n,'agent',msg);return res;};
   n.round++;
+  negLog(n,'you',`${agreed?'Aceptas: ':'Propones '}${EXACT(t.wage)}/sem durante ${t.years} año${t.years===1?'':'s'}${sign?` y ${EXACT(sign)} de prima de fichaje`:''}.`);
   const newBill=wageBill(c)+t.wage;
-  negLog(n,'you',`Propones ${EXACT(t.wage)}/sem durante ${t.years} año${t.years===1?'':'s'}${t.sign?` y ${EXACT(t.sign)} de prima de fichaje`:''}.`);
   if(newBill>wageLimit(c)&&(n.terms&&n.terms.dest)!=='acad'){res.state='closed';res.msg=`Supera el límite salarial de la directiva (${EXACT(wageLimit(c))}/sem): la masa salarial quedaría en ${EXACT(newBill)}.`;negLog(n,'agent',res.msg);return res;}
-  let req=WA.w*(1-Math.min(0.18,(t.sign||0)/(WA.w*40)));
-  if(p.age>=31&&t.years>2)req*=1.04;if(p.age<=22&&t.years<3)req*=1.04;
-  if(t.wage>=req*0.97){
+  if(!agreed&&sign<A.minSign){
+    /* pedir la prima no gasta paciencia, y la propuesta ya incluye un salario que el agente firmará */
+    const w=Math.max(t.wage,A.wage(A.minSign,t.years));
+    return propose([{wage:w,sign:A.minSign,years:t.years}],`El agente de ${p.name} necesita una prima de al menos ${EXACT(A.minSign)} (${A.wk} semanas). Con ella firma por ${EXACT(w)}/sem.`);
+  }
+  if(agreed||t.wage>=A.req(sign,t.years)*0.97){
     const o={fee,wage:t.wage,years:t.years,sellOn:n.agreed?n.agreed.sellOn:0,bonus:n.agreed?n.agreed.bonus:0,dest:(n.terms&&n.terms.dest)||'first'};
-    if(n.pre){c.budget-=(t.sign||0);p.pre={cid:S.user,wage:t.wage,years:t.years,sign:t.sign||0,Y:S.Y};n.stage='done';res.state='signed';res.msg=`${p.name} firma un pre-contrato: llegará libre el 1 de julio con ${t.years} año${t.years===1?'':'s'} a ${EXACT(t.wage)}/sem.`;negLog(n,'agent',res.msg);news(`Pre-contrato: ${p.name} (${S.clubs[p.club].name}) se unirá a tu club en verano.`,'t');return res;}
-    const sellerId=p.club;c.budget-=(t.sign||0);doSigning(p,o);
+    if(n.pre){c.budget-=sign;p.pre={cid:S.user,wage:t.wage,years:t.years,sign,Y:S.Y};n.stage='done';res.state='signed';res.msg=`${p.name} firma un pre-contrato: llegará libre el 1 de julio con ${t.years} año${t.years===1?'':'s'} a ${EXACT(t.wage)}/sem.`;negLog(n,'agent',res.msg);news(`Pre-contrato: ${p.name} (${S.clubs[p.club].name}) se unirá a tu club en verano.`,'t');return res;}
+    const sellerId=p.club;c.budget-=sign;doSigning(p,o);
     if(n.agreed&&n.agreed.swap!=null&&sellerId!=null&&typeof applySwap==='function')applySwap(sellerId,n.agreed.swap);
-    n.stage='done';res.state='signed';res.msg=`${p.name} firma por ${t.years} año${t.years===1?'':'s'}. ¡Bienvenido!`;negLog(n,'agent',res.msg);return res;
+    n.stage='done';n.deal=null;res.state='signed';res.msg=`${p.name} firma por ${t.years} año${t.years===1?'':'s'}. ¡Bienvenido!`;negLog(n,'agent',res.msg);return res;
   }
   n.patience--;
-  if(t.wage>=req*0.88&&n.patience>0){
-    const alt=Math.round(req*0.93/100)*100,altSign=Math.round(WA.w*8/1000)*1000;
-    res.state='counter';res.msg=`Su agente pide ${EXACT(Math.round(req/100)*100)}/sem, o ${EXACT(alt)}/sem con ${EXACT(altSign)} de prima de fichaje.`;
-    res.counters=[{l:`${EXACT(Math.round(req/100)*100)}/sem`,wage:Math.round(req/100)*100,sign:0},{l:`${EXACT(alt)}/sem + ${EXACT(altSign)} prima`,wage:alt,sign:altSign}];
-    negLog(n,'agent',res.msg);return res;
-  }
   if(n.patience<=0){n.dead=true;n.cool=S.t+14;res.state='dead';res.msg=`El agente de ${p.name} da por terminadas las conversaciones.`;negLog(n,'agent',res.msg);return res;}
-  res.state='reject';res.msg=`Es muy poco para ${p.name}: pide al menos ${EXACT(Math.round(req*0.9/100)*100)}/sem. (Paciencia ${n.patience}/${NEG_PATIENCE})`;negLog(n,'agent',res.msg);return res;
+  const s1=Math.max(sign,A.minSign),s2=Math.max(s1,Math.round(A.WA.w*8/1000)*1000),list=[{wage:A.wage(s1,t.years),sign:s1,years:t.years}];
+  if(s2>s1&&A.wage(s2,t.years)<list[0].wage)list.push({wage:A.wage(s2,t.years),sign:s2,years:t.years});
+  return propose(list,`Es poco para ${p.name}. Su agente firma por ${EXACT(list[0].wage)}/sem${list[0].sign?' con '+EXACT(list[0].sign)+' de prima':''}${list[1]?`, o ${EXACT(list[1].wage)}/sem con ${EXACT(list[1].sign)} de prima`:''}. (Paciencia ${n.patience}/${NEG_PATIENCE})`);
 }
 /* pre-contrato (Bosman): a un jugador al que le queda menos de un año se le puede fichar gratis desde enero */
 function negPre(pid){

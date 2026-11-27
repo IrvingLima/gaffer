@@ -116,9 +116,11 @@ function endSeason(){
     // 5. nueva temporada
   S.Y=Y+1;
   S.leagues.forEach(lg=>{if(calOf(lg.cc))return;resetTables(lg);lg.sched=genSched(lg,S.Y);lg.rd=0;});
-  Object.values(S.players).forEach(p=>{if(p.where==='retired')return;p.fit=100;p.inj=0;p.ovr0=p.ovr;p.lp=-9;if(p.club!=null&&S.clubs[p.club]&&calOf(S.clubs[p.club].cc))return;p.g=0;p.ap=0;p.ym=0;p.yg=0;});
+  Object.values(S.players).forEach(p=>{if(p.where==='retired')return;p.fit=100;p.inj=0;p.ovr0=p.ovr;p.lp=-9;if(p.club!=null&&S.clubs[p.club]&&calOf(S.clubs[p.club].cc))return;closeStats(p);p.g=0;p.ap=0;p.ym=0;p.yg=0;});
   Object.keys(S.know).forEach(id=>{S.know[id]=Math.round(S.know[id]*0.85);if(S.know[id]<20)delete S.know[id];});
   S.clubs.forEach(c=>{if(c.id!==S.user){refillClub(c,19);c.wageCap=Math.round(wageBill(c)*1.12);}c.form5=[];});
+  /* si te quedas sin plantilla para competir, se completan las fichas con juveniles */
+  {const mc=userClub();if(mc&&mc.players.length<16){const n=16-mc.players.length;refillClub(mc,16);news(`Tu plantilla se quedaba corta: se incorporan ${n} jugadores para completar el equipo.`,'n');}}
   refreshPools();buildTournaments(S.nextQual);
   genFreeClass(1);
   // 5b. economía: los ingresos de la IA se reajustan a su masa salarial; sin números rojos ni acumulación infinita
@@ -130,6 +132,7 @@ function endSeason(){
     if(c.budget<0)c.budget=0;
     const cap=W*52*0.9;if(c.budget>cap)c.budget-=(c.budget-cap)*0.6;
   });
+  offseasonMarket(sum,cc=>!calOf(cc));
   // 6. AI managers: cese de los peores
   S.clubs.forEach(c=>{if(c.id===S.user||!c.mg||calOf(c.cc))return;
     const pos=c.lg!=null?sortedFinal(S.leagues[c.lg]).indexOf(c.id)+1:1;
@@ -160,7 +163,7 @@ function closeCalYear(cc){
   leagueClose(sum,x=>x===cc);
   S.leagues.forEach(lg=>{if(lg.cc!==cc)return;lg.Y=Y+1;resetTables(lg);lg.sched=genSched(lg,lg.Y);lg.rd=0;});
   const ids=new Set(S.clubs.filter(c=>c.cc===cc).map(c=>c.id));
-  Object.values(S.players).forEach(p=>{if(p.where==='retired'||p.club==null||!ids.has(p.club))return;p.g=0;p.ap=0;p.ym=0;p.yg=0;});
+  Object.values(S.players).forEach(p=>{if(p.where==='retired'||p.club==null||!ids.has(p.club))return;closeStats(p);p.g=0;p.ap=0;p.ym=0;p.yg=0;});
   S.clubs.forEach(c=>{if(c.cc!==cc)return;c.form5=[];
     if(c.id===S.user||!c.mg)return;
     const pos=c.lg!=null?sortedFinal(S.leagues[c.lg]).indexOf(c.id)+1:1;
@@ -175,6 +178,7 @@ function closeCalYear(cc){
     S.summary=sum;S.sumN=(S.sumN||0)+1;
   }
   news(`Fin de la temporada ${Y} en ${LG_BY_CC[cc].nm}. Campeón: ${sum.champs.length?sum.champs[0].club:'—'}.`,'s');
+  offseasonMarket(sum,x=>x===cc);
   save();
 }
 function refreshPools(){
@@ -245,7 +249,7 @@ function createClub(cc,cfg){
   const lg=S.leagues.find(l=>l.cc===cc&&l.tier===4);
   const c=lg.ids.map(id=>S.clubs[id]).sort((a,b)=>a.skill-b.skill)[0];
   c.city=cfg.city;c.suf=cfg.suf;c.name=cfg.city+' '+cfg.suf;c.c1=cfg.c1;c.c2=cfg.c2;c.pat=cfg.pat;c.sh=cfg.sh||0;c.stad=cfg.stad||('Estadio '+cfg.city);
-  const seen={};lg.ids.forEach(id=>{if(id!==c.id)seen[S.clubs[id].short]=1;});c.short=shortFor(c.city,c.suf,seen);c.custom=true;c.phil=cfg.phil||'balance';
+  const seen={};lg.ids.forEach(id=>{if(id!==c.id)seen[S.clubs[id].short]=1;});c.short=shortFor(c.city,c.suf,seen);if(cfg.short&&cfg.short.length>=2){c.short=cfg.short;c.shortCustom=true;}c.custom=true;c.phil=cfg.phil||'balance';
   c.rival=pick(lg.ids.filter(id=>id!==c.id));
   return c.id;
 }

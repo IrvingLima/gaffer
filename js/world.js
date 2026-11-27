@@ -30,7 +30,9 @@ function resetTables(lg){lg.tab={};lg.ids.forEach(id=>{lg.tab[id]={p:0,w:0,d:0,l
 function shortFor(city,suf,seen){
   const words=city.split(' '),cc=words.length>1?words.map(w=>w[0]).join('').slice(0,2):city.slice(0,2);
   const opts=[cc+suf[0],cc[0]+suf.slice(0,2),city.slice(0,3),suf.slice(0,3),cc[0]+suf[0]+suf[suf.length-1]].map(s=>strip(s).toUpperCase());
-  let s=opts.find(x=>!seen[x])||opts[0]+Object.keys(seen).length;seen[s]=1;return s;
+  let s=opts.find(x=>!seen[x]);
+  if(!s){const a=strip(city+suf).replace(/[^A-Za-z]/g,'').toUpperCase();for(let i=1;i<a.length-1&&!s;i++)for(let j=i+1;j<a.length&&!s;j++){const x=a[0]+a[i]+a[j];if(!seen[x])s=x;}}
+  s=s||opts[0]+Object.keys(seen).length;seen[s]=1;return s;
 }
 function mkClub(L,ti,idx,n,def,lgId,seen){
   const [city,suf,c1,c2]=def,range=L.t[ti][2],tier=ti+1;
@@ -85,7 +87,7 @@ function genFreeTrickle(){
   const p=mkPlayer(pick(POS),rnd(t0,t1),a0,a1,pickNat(pick(LEAGUES).cc),null,tag==='gem'?{yq:1.15}:undefined);p.where='free';p.fa=S.t;p.fc=tag;S.players[p.id]=p;S.free.push(p.id);
 }
 function genWorld(){
-  S={v:4,ident:1,nid:1,Y:2026,t:dayOf(2026,7,1),players:{},clubs:[],leagues:[],free:[],pools:{},know:{},kq:{},short:[],reports:[],news:[],inbox:[],mgrs:[],ledger:[],
+  S={v:4,ident:2,nid:1,Y:2026,t:dayOf(2026,7,1),players:{},clubs:[],leagues:[],free:[],pools:{},know:{},kq:{},short:[],reports:[],news:[],inbox:[],mgrs:[],ledger:[],
      hist:{champs:[],seasons:[]},staff:{hired:[],market:[]},scout:{miss:{}},ac:null,user:null,mgr:null,pend:null,summary:null,uid:1,tr:[],obj:{},mid:1,watch:{},records:{},mres:[],tn:{},ev:{}};
   LEAGUES.forEach(L=>{
     L.t.forEach((T,ti)=>{
@@ -96,7 +98,7 @@ function genWorld(){
         if(ti===0)def=T1[L.cc][i];
         else{
           const cities=(ti===1?T2CITY:ti===2?T3CITY:T4CITY)[L.cc].split(','),suf=T2SUF[L.cc],city=cities[i%cities.length],pal=PAL[hsh(city+L.cc+ti)%PAL.length];
-          def=[city,suf[hsh(city+ti)%suf.length],pal[0],pal[1]];
+          def=[city,identNick(L.cc,city),pal[0],pal[1]];
         }
         const c=mkClub(L,ti,i,n,def,lg.id,seen);lg.ids.push(c.id);
       }
@@ -183,7 +185,7 @@ function playRound(lg,r){
 }
 function commitUserMatch(M){
   const p=S.pend;if(!p)return;const lg=S.leagues[p.lg];
-  applyResult(lg,M);lg.rd++;S.pend=null;
+  applyResult(lg,M);recordStats(M);lg.rd++;S.pend=null;
   const my=M.hid===S.user?M.hg:M.ag,op=M.hid===S.user?M.ag:M.hg,c=userClub();
   challengeResult(M);
   c.form5=(c.form5||[]);c.form5.push(my>op?'W':my<op?'L':'D');c.form5=c.form5.slice(-6);
@@ -237,6 +239,7 @@ function windowDay(mo,dd){
 
 function weeklyTick(){
   genFreeTrickle();if(Math.random()<0.5)genFreeTrickle();
+  aiFreeSignings();
   const wk=Math.floor((S.t-dayOf(S.Y,7,1))/7);
   if(wk%4===0){const c0=userClub();if(c0)c0.players.forEach(id=>{const p=S.players[id];if(p)p.mv=Math.round((0.85+Math.random()*0.3)*100)/100;});}
   S.clubs.forEach(c=>{
@@ -279,7 +282,7 @@ function refillClub(c,min){
   while(c.players.length<min){
     const need=['GK','DEF','MID','FWD'].map(pos=>[pos,c.players.filter(i=>S.players[i].pos===pos).length]);
     const [pos]=need.sort((a,b)=>a[1]/(a[0]==='GK'?2:a[0]==='DEF'?6:a[0]==='MID'?6:4)-b[1]/(b[0]==='GK'?2:b[0]==='DEF'?6:b[0]==='MID'?6:4))[0];
-    const fa=S.free.map(i=>S.players[i]).filter(p=>p&&p.pos===pos&&p.ovr>=clubQ(c)-9).sort((a,b)=>b.ovr-a.ovr)[0];
+    const fa=S.free.length>120?S.free.map(i=>S.players[i]).filter(p=>p&&p.pos===pos&&p.ovr>=clubQ(c)-9).sort((a,b)=>b.ovr-a.ovr)[0]:null;
     if(fa){S.free=S.free.filter(i=>i!==fa.id);fa.club=c.id;fa.where='first';fa.ce=S.Y+ri(1,2);fa.w=Math.round(wageOf(fa)/100)*100;c.players.push(fa.id);}
     else{const p=mkPlayer(pos,clubQ(c)-6,17,20,pickNat(c.cc),c.id,{yq:1});p.where='first';S.players[p.id]=p;c.players.push(p.id);}
   }
