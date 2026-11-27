@@ -435,3 +435,10 @@ select{padding-right:8px}input[type=range]{width:100%;accent-color:var(--acc);he
 :root[data-theme="light"] .mkhero-in{text-shadow:0 0 6px var(--s1)}
 .mcard{min-width:0}.mcard .mc-act{flex-wrap:wrap}@media(max-width:560px){.mcards{grid-template-columns:minmax(0,1fr)}.mcard .mc-act>.sub,.mcard .mc-act>.reach:first-child{flex-basis:100%}}
 .mcard{grid-template-columns:minmax(0,1fr)}@media(max-width:400px){.mcard .mc-act{gap:4px}.mcard .mc-act .btn.xs{padding-left:8px;padding-right:8px}}
+/* ---- ajustes ---- */
+.gearbtn{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--s1);color:var(--ink);cursor:pointer}.gearbtn .ic{width:22px;height:22px}
+@media(min-width:980px){.gearbtn{display:none}}
+@media(max-width:420px){.top{gap:10px}}
+.modal .box.settings{max-width:560px}.seth{margin:18px 0 8px;padding-top:12px;border-top:1px solid var(--line)}.mhead+.seth{margin-top:0;padding-top:0;border-top:0}
+.setrow{margin:10px 0}.setrow .lbl{margin-bottom:6px}.settings .setseg{display:flex;width:100%}.settings .setseg>button{flex:1;min-width:0;min-height:44px;padding-left:4px;padding-right:4px}
+.setbtns{display:grid;gap:8px}.setbtns .btn{min-height:46px}

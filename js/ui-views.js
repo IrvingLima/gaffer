@@ -86,10 +86,10 @@ function _render(){
   const links=tabs.map(([k,l,i])=>`<button data-tab="${k}" ${UI.tab===k?'aria-current="page"':''}>${ic(i)}<span>${l}</span>${k==='home'&&pc?`<span class="badge" aria-label="${pc} decisiones">${pc}</span>`:''}</button>`).join('');
   const body=({home:vHome,team:vTeam,acad:vAcad,scout:vScout,market:vMarket,club:vClub,league:vLeague,career:vCareer})[UI.tab]();
   $('#app').innerHTML=`<div class="app"><nav class="rail" aria-label="Secciones"><div class="brand"><div class="wordmark">Gaffer<i>.</i></div></div><div class="links">${links}</div>
-  <div class="railfoot"><button class="btn sm ghost" data-act="theme">${ic('sun')} Tema</button><button class="btn sm ghost" data-act="menu">Menú</button></div></nav>
+  <div class="railfoot"><button class="btn sm ghost" data-act="settings">${ic('cog')} Ajustes</button><button class="btn sm ghost" data-act="menu">Menú</button></div></nav>
   <div class="main"><header class="top">${c?crest(c,52):`<div class="avatar" style="color:var(--acc);border-color:var(--acc)">${ic('brief')}</div>`}<div class="id"><h1>${c?esc(c.name):'Sin club'}</h1>
    <div class="meta"><span>${esc(S.mgr.name)}</span><span>·</span><span>${userSeasonLabel()}</span><span>·</span><span>${fmtD(S.t)}</span>${c?windowChip():''}</div></div>
-   <div><div class="lbl" style="text-align:right">${c?'Presupuesto':'Reputación'}</div><div class="cash ${c&&c.budget<0?'neg':''}">${c?EUR(c.budget):Math.round(S.mgr.rep)}</div></div></header>
+   <div><div class="lbl" style="text-align:right">${c?'Presupuesto':'Reputación'}</div><div class="cash ${c&&c.budget<0?'neg':''}">${c?EUR(c.budget):Math.round(S.mgr.rep)}</div></div><button class="gearbtn" data-act="settings" aria-label="Ajustes">${ic('cog')}</button></header>
   ${actionBar()}${body}</div></div>`;
 }
 function actionBar(){

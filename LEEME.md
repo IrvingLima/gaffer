@@ -1,4 +1,4 @@
-# Gaffer — Modo Carrera (v4.46)
+# Gaffer — Modo Carrera (v4.47)
 
 Abre **`index.html`** con doble clic en cualquier navegador (también en móvil). Se guarda solo en tu dispositivo (IndexedDB), **se instala como app (PWA) y abre sin conexión** (tras la primera visita) y no tiene anuncios ni pagos. Hay **6 ranuras de carrera** para jugar partidas simultáneas.
 
@@ -19,7 +19,7 @@ Abre **`index.html`** con doble clic en cualquier navegador (también en móvil)
 - **Create-a-Club** con filosofía (cantera / fichajes / equilibrada) que cambia objetivos y presupuesto, y rival histórico (derbi).
 
 ## Estructura
-`index.html` · `sw.js` y `manifest.webmanifest` (app instalable; al publicar, sube `V` en `sw.js` a la misma versión que `?v=` de `index.html`) · `icons/` · `css/style.css` · `js/`: datos (`data`, `data2`, `data3`, `names`), motor (`core`, `identity`, `roles`, `sim`, `world`, `tourn`, `season`, `user1-3`, `manager`, `game`) e interfaz (`flags`, `ui-base`, `ui-views`, `ui-market`, `ui-map`, `ui-decide`, `ui-neg`, `ui-actions`, `ui-match`, `ui-stats`, `ui-hub`, `ui-deal`) · `playtest/` (rondas de pruebas CANTERA) · `v2_backup/`, `v3_backup_js/`.
+`index.html` · `sw.js` y `manifest.webmanifest` (app instalable; al publicar, sube `V` en `sw.js` a la misma versión que `?v=` de `index.html`) · `icons/` · `css/style.css` · `js/`: datos (`data`, `data2`, `data3`, `names`), motor (`core`, `identity`, `roles`, `sim`, `world`, `tourn`, `season`, `user1-3`, `manager`, `game`) e interfaz (`flags`, `ui-base`, `ui-views`, `ui-market`, `ui-map`, `ui-decide`, `ui-neg`, `ui-actions`, `ui-match`, `ui-stats`, `ui-hub`, `ui-deal`, `ui-settings`) · `playtest/` (rondas de pruebas CANTERA) · `v2_backup/`, `v3_backup_js/`.
 
 ## Pruebas (manual del agente playtester)
 `node playtest/cantera.js ronda-N [fast|soak|pt24|all]` ejecuta los escenarios PT-xx con semillas reproducibles y `node playtest/informe.js ronda-N` genera el paquete de entrega. Los usuarios son **simulados**: sirven para detectar fallos, no sustituyen a jugadores reales.
@@ -41,3 +41,6 @@ Exportar/importar partida a archivo `.gaffer`; potencial dinámico en el primer 
 
 ## Novedades v4.46
 - Identidad de clubes (`js/identity.js`): 5 formas de escudo originales, 11 patrones, estadios ligados a la zona y sufijos geográficos en categorías inferiores. Sin escudos, símbolos ni marcas reales. Las partidas guardadas se actualizan al cargarlas.
+
+## Novedades v4.47
+- Ajustes dentro de la partida (engranaje en el móvil, «Ajustes» en el escritorio): nombre del mánager, dificultad, tema, opciones de partido, medias exactas, guardar, exportar y salir al menú.

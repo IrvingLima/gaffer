@@ -8,6 +8,7 @@ function renderModal(){
   else if(m.type==='dd')html=mDeadline();
   else if(m.type==='slotpick')html=mSlotPick(m.i);
   else if(m.type==='renew')html=mRenew(m.pid);
+  else if(m.type==='settings')html=mSettings();
   else if(m.type==='loan')html=mLoan(m.pid);
   else if(m.type==='mission')html=mMission(m);
   else if(m.type==='follow')html=mFollow(m.pid);
@@ -109,8 +110,8 @@ function dotsFor(M){
 }
 function startMatchUI(opt){
   const p=S.pend;if(!p)return;const M=newMatch(p.h,p.a,true),side=p.h===S.user?'h':'a';
-  UI.ms={M,side,speed:1,ht:false,done:false,ball:[52.5,34],goalAt:0,committed:false};
-  if(opt&&opt.key){M.keyOn=true;UI.ms.speed=4;}
+  UI.ms={M,side,speed:+pref('speed','1')||1,ht:false,done:false,ball:[52.5,34],goalAt:0,committed:false};
+  if((opt&&opt.key)||pref('key','0')==='1'){M.keyOn=true;UI.ms.speed=4;}
   UI.m={type:'match'};drawMatch();startTimer();
 }
 function startTimer(){
